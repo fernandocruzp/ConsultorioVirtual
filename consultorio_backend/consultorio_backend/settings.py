@@ -21,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Construimos la ruta al archivo .env
 dotenv_path = os.path.join(BASE_DIR, '.env')
 
+allowed_hosts_str = os.environ.get('ALLOWED_HOSTS')
 # Cargamos el archivo
 load_dotenv(dotenv_path=dotenv_path)
 # Quick-start development settings - unsuitable for production
