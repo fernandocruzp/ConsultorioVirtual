@@ -1,0 +1,115 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+    {% if cita %}Editar Cita{% else %}Nueva Cita{% endif %} - Pineda IntegralMedic
+{% endblock %}
+
+{% block header %}
+    {% if cita %}
+    Editar Cita para {{ cita.paciente.nombre }} {{ cita.paciente.apellidos }}
+    {% elif paciente %}
+    Nueva Cita para {{ paciente.nombre }} {{ paciente.apellidos }}
+    {% else %}
+    Nueva Cita
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            {% if cita %}
+            Editar cita para {{ cita.paciente.nombre }} {{ cita.paciente.apellidos }}
+            {% elif paciente %}
+            Programar cita para {{ paciente.nombre }} {{ paciente.apellidos }}
+            {% else %}
+            Programar nueva cita
+            {% endif %}
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+           
+            <div class="form-group mb-3">
+                <label for="{{ form.paciente.id_for_label }}">Paciente:</label>
+                {{ form.paciente }}
+                {% if form.paciente.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.paciente.errors }}
+                </div>
+                {% endif %}
+            </div>
+           
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.fecha_hora.id_for_label }}">Fecha y hora:</label>
+                        {{ form.fecha_hora }}
+                        {% if form.fecha_hora.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.fecha_hora.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.motivo.id_for_label }}">Motivo:</label>
+                        {{ form.motivo }}
+                        {% if form.motivo.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.motivo.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="{{ form.notas.id_for_label }}">Notas (opcional):</label>
+                {{ form.notas }}
+                {% if form.notas.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.notas.errors }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% if cita %}/agenda/cita/{{ cita.id }}/{% elif paciente %}/pacientes/{{ paciente.id }}/{% else %}/agenda/{% endif %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Aplicar clases de Bootstrap a los campos del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const formControls = document.querySelectorAll('input, textarea, select');
+        formControls.forEach(function(element) {
+            element.classList.add('form-control');
+            
+            // Si hay errores, marcar el campo como inválido
+            if (element.nextElementSibling && element.nextElementSibling.classList.contains('invalid-feedback')) {
+                element.classList.add('is-invalid');
+            }
+        });
+        
+        // Mejorar el campo de fecha y hora
+        const fechaHoraInput = document.querySelector('#id_fecha_hora');
+        if (fechaHoraInput) {
+            fechaHoraInput.type = 'datetime-local';
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+events: [
+                {% for cita in todas_citas %}
+                {
+                    title: '{{ cita.paciente.nombre }} {{ cita.paciente.apellidos }}',
+                    start: '{{ cita.fecha_hora|date:"Y-m-d" }}T{{ cita.fecha_hora|date:"H:i:s" }}',
+                    url: '/agenda/cita/{{ cita.id }}/',
+                    className: 'estado-{{ cita.estado }}',
+                    extendedProps: {
+                        motivo: '{{ cita.motivo }}',
+                        estado: '{{ cita.estado }}'
+                    }
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]

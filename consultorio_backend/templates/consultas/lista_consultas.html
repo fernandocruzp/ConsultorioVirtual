@@ -1,0 +1,134 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Consultas - Pineda IntegralMedic{% endblock %}
+
+{% block header %}Consultas{% endblock %}
+
+{% block header_actions %}
+<a href="/consultas/nuevo/" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Nueva Consulta
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="m-0 font-weight-bold text-primary">Lista de Consultas</h6>
+            </div>
+            <div class="col-md-6">
+                <form method="get" class="d-flex">
+                    <input type="text" name="q" class="form-control" placeholder="Buscar por paciente..." value="{{ request.GET.q }}">
+                    <button type="submit" class="btn btn-primary ml-2">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if consultas %}
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Fecha</th>
+                        <th>Peso (kg)</th>
+                        <th>Altura (cm)</th>
+                        <th>IMC</th>
+                        <th>Plan Nutricional</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for consulta in consultas %}
+                    <tr>
+                        <td>
+                            <a href="/pacientes/{{ consulta.paciente.id }}/">
+                                {{ consulta.paciente.nombre }} {{ consulta.paciente.apellidos }}
+                            </a>
+                        </td>
+                        <td>{{ consulta.fecha|date:"d/m/Y" }}</td>
+                        <td>{{ consulta.peso }}</td>
+                        <td>{{ consulta.altura }}</td>
+                        <td>{{ consulta.imc|floatformat:2 }}</td>
+                        <td>
+                            {% if consulta.plan %}
+                            <span class="badge bg-success">Sí</span>
+                            {% else %}
+                            <span class="badge bg-warning">No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/consultas/{{ consulta.id }}/" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if consulta.plan %}
+                            <a href="/consultas/plan/{{ consulta.plan.id }}/" class="btn btn-sm btn-success">
+                                <i class="fas fa-file-medical"></i> Ver Plan
+                            </a>
+                            {% else %}
+                            <a href="/consultas/plan/nuevo/{{ consulta.id }}/" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-plus"></i> Crear Plan
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mt-4">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <p class="text-center">No hay consultas registradas.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+# Variables de Entorno
+.env
+
+# Base de datos local
+db.sqlite3
+*.sqlite3
+
+# Archivos de Python compilados y cachés
+__pycache__/
+*.pyc
+
+# Carpetas de entorno virtual
+venv/
+env/
+
+# Archivos estáticos y de medios recolectados por Django
+staticfiles/
+media/
+
+*~
+#*#
+.#*

@@ -1,0 +1,54 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Receta para {{ receta.consulta.paciente.nombre }} - Pineda IntegralMedic{% endblock %}
+
+{% block header %}Receta: {{ receta.consulta.paciente.nombre }} {{ receta.consulta.paciente.apellidos }}{% endblock %}
+
+{% block header_actions %}
+<div>
+    <a href="/consultas/{{ receta.consulta.id }}/" class="btn btn-info">
+        <i class="fas fa-arrow-left"></i> Volver a Consulta
+    </a>
+    <a href="/consultas/receta/{{ receta.id }}/pdf/" class="btn btn-danger">
+        <i class="fas fa-file-pdf"></i> Generar PDF
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Receta Médica</h6>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-4 font-weight-bold">Paciente:</div>
+            <div class="col-md-8">
+                <a href="/pacientes/{{ receta.consulta.paciente.id }}/">
+                    {{ receta.consulta.paciente.nombre }} {{ receta.consulta.paciente.apellidos }}
+                </a>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4 font-weight-bold">Fecha:</div>
+            <div class="col-md-8">{{ receta.fecha_creacion|date:"d/m/Y" }}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4 font-weight-bold">Edad del paciente:</div>
+            <div class="col-md-8">{{ receta.consulta.paciente.calcular_edad }} años</div>
+        </div>
+        
+        <hr>
+        <h5 class="mb-3">Medicamentos</h5>
+        <div class="receta-content p-3 bg-light rounded">
+            {{ receta.medicamentos|linebreaks }}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/consultas/receta/{{ receta.id }}/editar/" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Editar Receta
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

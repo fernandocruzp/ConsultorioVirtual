@@ -1,0 +1,166 @@
+/* Estilos personalizados para Consultorio Virtual */
+
+:root {
+    --primary-color: #4e73df;
+    --secondary-color: #1cc88a;
+    --accent-color: #f6c23e;
+    --danger-color: #e74a3b;
+    --dark-color: #5a5c69;
+    --light-color: #f8f9fc;
+}
+
+/* Estilos generales */
+body {
+    background-color: var(--light-color);
+    font-family: 'Nunito', sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--primary-color) 0%, #224abe 100%);
+    color: white;
+    position: fixed;
+    width: 16.66667%;
+    z-index: 100;
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 1rem;
+    border-radius: 0.35rem;
+    margin-bottom: 0.2rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.sidebar .nav-link:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .nav-link i {
+    margin-right: 0.5rem;
+}
+
+/* Contenido principal */
+.content {
+    margin-left: 16.66667%;
+    padding: 1.5rem;
+}
+
+/* Tarjetas */
+.card {
+    border: none;
+    border-radius: 0.35rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid #e3e6f0;
+    font-weight: bold;
+    color: var(--dark-color);
+}
+
+/* Botones */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-success {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-warning {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.logo-pineda {
+    width:100px; /* Ancho deseado */
+    height: auto; /* El navegador calcula la altura para mantener la proporción */
+}
+
+
+/* Encabezados de página */
+.page-header {
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e3e6f0;
+    padding-bottom: 1rem;
+}
+
+/* Tarjetas de estadísticas */
+.border-left-primary {
+    border-left: 0.25rem solid var(--primary-color) !important;
+}
+
+.border-left-success {
+    border-left: 0.25rem solid var(--secondary-color) !important;
+}
+
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+
+.border-left-warning {
+    border-left: 0.25rem solid var(--accent-color) !important;
+}
+
+.border-left-danger {
+    border-left: 0.25rem solid var(--danger-color) !important;
+}
+
+/* Tablas */
+.table th {
+    background-color: #f8f9fc;
+    font-weight: bold;
+    color: var(--dark-color);
+}
+
+/* Calendario */
+.fc-event {
+    cursor: pointer;
+    border-radius: 0.25rem;
+}
+
+.estado-programada {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.estado-completada {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+}
+
+.estado-cancelada {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        min-height: auto;
+    }
+    
+    .content {
+        margin-left: 0;
+    }
+}

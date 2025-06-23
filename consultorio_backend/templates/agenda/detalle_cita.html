@@ -1,0 +1,197 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Cita: {{ cita.paciente.nombre }} - Pineda IntegralMedic{% endblock %}
+
+{% block header %}Cita: {{ cita.paciente.nombre }} {{ cita.paciente.apellidos }}{% endblock %}
+
+{% block header_actions %}
+<div>
+    <a href="/pacientes/{{ cita.paciente.id }}/" class="btn btn-info">
+        <i class="fas fa-user"></i> Ver Paciente
+    </a>
+    {% if cita.estado == 'programada' %}
+    <a href="/agenda/cita/{{ cita.id }}/editar/" class="btn btn-warning">
+        <i class="fas fa-edit"></i> Editar
+    </a>
+    <a href="/agenda/cita/{{ cita.id }}/completar/" class="btn btn-success">
+        <i class="fas fa-check"></i> Marcar como Completada
+    </a>
+    <a href="/agenda/cita/{{ cita.id }}/cancelar/" class="btn btn-danger">
+        <i class="fas fa-times"></i> Cancelar
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Información de la Cita</h6>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Paciente:</div>
+            <div class="col-md-9">
+                <a href="/pacientes/{{ cita.paciente.id }}/">
+                    {{ cita.paciente.nombre }} {{ cita.paciente.apellidos }}
+                </a>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Fecha y hora:</div>
+            <div class="col-md-9">{{ cita.fecha_hora|date:"d/m/Y H:i" }}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Motivo:</div>
+            <div class="col-md-9">{{ cita.motivo }}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Estado:</div>
+            <div class="col-md-9">
+                {% if cita.estado == 'programada' %}
+                <span class="badge bg-primary">Programada</span>
+                {% elif cita.estado == 'completada' %}
+                <span class="badge bg-success">Completada</span>
+                {% elif cita.estado == 'cancelada' %}
+                <span class="badge bg-danger">Cancelada</span>
+                {% endif %}
+            </div>
+        </div>
+        {% if cita.notas %}
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Notas:</div>
+            <div class="col-md-9">{{ cita.notas|linebreaks }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if cita.estado == 'programada' %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Marcar como Completada</h6>
+            </div>
+            <div class="card-body">
+                <p>Al marcar la cita como completada, puede registrar una nueva consulta para el paciente.</p>
+                <div class="text-center">
+                    <a href="/consultas/nuevo/{{ cita.paciente.id }}/" class="btn btn-success">
+                        <i class="fas fa-clipboard-list"></i> Registrar Consulta
+                    </a>
+                    <a href="/agenda/cita/{{ cita.id }}/completar/" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Solo Marcar como Completada
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Cancelar Cita</h6>
+            </div>
+            <div class="card-body">
+                <p>Si el paciente no puede asistir, puede cancelar la cita y opcionalmente reprogramarla.</p>
+                <div class="text-center">
+                    <a href="/agenda/cita/{{ cita.id }}/cancelar/" class="btn btn-danger">
+                        <i class="fas fa-times"></i> Cancelar Cita
+                    </a>
+                    <a href="/agenda/cita/{{ cita.id }}/editar/" class="btn btn-primary">
+                        <i class="fas fa-calendar-plus"></i> Reprogramar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Historial de consultas del paciente -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Historial de Consultas del Paciente</h6>
+    </div>
+    <div class="card-body">
+        {% if consultas %}
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Peso (kg)</th>
+                        <th>Altura (cm)</th>
+                        <th>IMC</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for consulta in consultas %}
+                    <tr>
+                        <td>{{ consulta.fecha|date:"d/m/Y" }}</td>
+                        <td>{{ consulta.peso }}</td>
+                        <td>{{ consulta.altura }}</td>
+                        <td>{{ consulta.imc|floatformat:2 }}</td>
+                        <td>
+                            <a href="/consultas/{{ consulta.id }}/" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center">No hay consultas registradas para este paciente.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Otras citas del paciente -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Otras Citas del Paciente</h6>
+    </div>
+    <div class="card-body">
+        {% if otras_citas %}
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for otra_cita in otras_citas %}
+                    <tr {% if otra_cita.id == cita.id %}class="table-active"{% endif %}>
+                        <td>{{ otra_cita.fecha_hora|date:"d/m/Y H:i" }}</td>
+                        <td>{{ otra_cita.motivo }}</td>
+                        <td>
+                            {% if otra_cita.estado == 'programada' %}
+                            <span class="badge bg-primary">Programada</span>
+                            {% elif otra_cita.estado == 'completada' %}
+                            <span class="badge bg-success">Completada</span>
+                            {% elif otra_cita.estado == 'cancelada' %}
+                            <span class="badge bg-danger">Cancelada</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/agenda/cita/{{ otra_cita.id }}/" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center">No hay otras citas registradas para este paciente.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,328 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Historial - {{ consulta.paciente.nombre }} - Pineda IntegralMedic{% endblock %}
+
+{% block header %}Historial: {{ consulta.paciente.nombre }} {{ consulta.paciente.apellidos }}{% endblock %}
+
+{% block header_actions %}
+<div>
+    <a href="/consultas/{{ consulta.id }}/" class="btn btn-info">
+        <i class="fas fa-clipboard-list"></i> Ver Consulta
+    </a>
+    <a href="/pacientes/{{ consulta.paciente.id }}/" class="btn btn-primary">
+        <i class="fas fa-user"></i> Ver Paciente
+    </a>
+    <a href="/consultas/historial/{{ consulta.id }}/pdf/" class="btn btn-danger">
+        <i class="fas fa-file-pdf"></i> Generar PDF
+    </a>
+    <a href="/consultas/historial/{{ consulta.id }}/email/" class="btn btn-success">
+        <i class="fas fa-envelope"></i> Enviar por Email
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Historial</h6>
+    </div>
+    <div class="card-body">
+        {% if historial_consultas %}
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+			<th>Cintura (cm)</th>
+			<th>Cadera (cm)</th>
+			<th>Pecho (cm)</th>
+			<th>T/A (cm)</th>
+			<th>Peso (kg)</th>
+                        <th>Altura (cm)</th>
+                        <th>IMC</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hist_consulta in historial_consultas %}
+                    <tr {% if hist_consulta.id == consulta.id %}class="table-active"{% endif %}>
+                        <td>{{ hist_consulta.fecha|date:"d/m/Y" }}</td>
+			<td>{{ hist_consulta.circunferencia_cintura|default:"-" }}</td>
+                        <td>{{ hist_consulta.circunferencia_cadera|default:"-" }}</td>
+			<td>{{ hist_consulta.circunferencia_pecho|default:"-" }}</td>
+                        <td>{{ hist_consulta.tratammiento_arterial|default:"-" }}</td>
+			<td>{{ hist_consulta.peso }}</td>
+                        <td>{{ hist_consulta.altura }}</td>
+                        <td>{{ hist_consulta.imc|floatformat:2 }}</td>
+                        <td>
+                            <a href="/consultas/{{ hist_consulta.id }}/" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center">No hay otras consultas registradas para este paciente.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Gráfica</h6>
+    </div>
+    <div class="row">
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Evolución del Peso (kg)</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="graficaPeso"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Evolución del IMC</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="graficaIMC"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% comment %} Puedes agregar otra fila con más gráficas si lo deseas {% endcomment %}
+<div class="row">
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Evolución de Cintura (cm)</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="graficaCintura"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Evolución de Cadera (cm)</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="graficaCadera"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Evolución del Pecho (kg)</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="graficaPecho"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Evolución de la TA</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="graficaTA"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 2. Recuperar los datos que pasamos desde Django
+    const fechas = JSON.parse('{{ fechas_json|escapejs }}');
+    const pesos = JSON.parse('{{ peso_json|escapejs }}');
+    const imcs = JSON.parse('{{ imc_json|escapejs }}');
+    const cinturas = JSON.parse('{{ cintura_json|escapejs }}');
+    const caderas = JSON.parse('{{ cadera_json|escapejs }}');
+    const pecho = JSON.parse('{{ pecho_json|escapejs }}');
+    const ta = JSON.parse('{{ ta_json|escapejs }}');
+
+    // --- Configuración Común para las Gráficas ---
+    const chartOptions = {
+        maintainAspectRatio: false,
+        responsive: true,
+        scales: {
+            x: {
+                grid: { display: false }
+            },
+            y: {
+                beginAtZero: false, // No siempre empezar en 0 para que se vea mejor el cambio
+                ticks: {
+                    padding: 10,
+                },
+            }
+        },
+        plugins: {
+            legend: {
+                display: false // Ocultamos la leyenda superior para un look más limpio
+            }
+        },
+        interaction: {
+            intersect: false,
+            mode: 'index',
+        },
+    };
+
+    // --- 3. CREAR GRÁFICA DE PESO ---
+    const ctxPeso = document.getElementById('graficaPeso');
+    if (ctxPeso) {
+        new Chart(ctxPeso, {
+            type: 'line', // Tipo de gráfica
+            data: {
+                labels: fechas,
+                datasets: [{
+                    label: 'Peso (kg)',
+                    data: pesos,
+                    borderColor: 'rgb(78, 115, 223)',
+                    backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                    fill: true,
+                    tension: 0.3 // Hace la línea un poco curva y suave
+                }]
+            },
+            options: chartOptions
+        });
+    }
+
+    // --- 4. CREAR GRÁFICA DE IMC ---
+    const ctxIMC = document.getElementById('graficaIMC');
+    if (ctxIMC) {
+        new Chart(ctxIMC, {
+            type: 'line',
+            data: {
+                labels: fechas,
+                datasets: [{
+                    label: 'IMC',
+                    data: imcs,
+                    borderColor: 'rgb(28, 200, 138)',
+                    backgroundColor: 'rgba(28, 200, 138, 0.05)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: chartOptions
+        });
+    }
+
+    // --- 5. CREAR GRÁFICA DE CINTURA ---
+    const ctxCintura = document.getElementById('graficaCintura');
+    if (ctxCintura) {
+        new Chart(ctxCintura, {
+            type: 'line',
+            data: {
+                labels: fechas,
+                datasets: [{
+                    label: 'Cintura (cm)',
+                    data: cinturas,
+                    borderColor: 'rgb(246, 194, 62)',
+                    backgroundColor: 'rgba(246, 194, 62, 0.05)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: chartOptions
+        });
+    }
+
+    // --- 6. CREAR GRÁFICA DE Cadera ---
+    const ctxCadera = document.getElementById('graficaCadera');
+    if (ctxCadera) {
+        new Chart(ctxCadera, {
+            type: 'line',
+            data: {
+                labels: fechas,
+                datasets: [{
+                    label: 'Cadera (cm)',
+                    data: caderas,
+                    borderColor: 'rgb(28, 200, 138)',
+                    backgroundColor: 'rgba(28, 200, 138, 0.05)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: chartOptions
+        });
+    }
+
+    // --- 7. CREAR GRÁFICA DE PECHO ---
+    const ctxPecho = document.getElementById('graficaPecho');
+    if (ctxPecho) {
+        new Chart(ctxPecho, {
+            type: 'line',
+            data: {
+                labels: fechas,
+                datasets: [{
+                    label: 'Pecho (cm)',
+                    data: pecho,
+                    borderColor: 'rgb(246, 194, 62)',
+                    backgroundColor: 'rgba(246, 194, 62, 0.05)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: chartOptions
+        });
+    }
+
+    // --- 8. CREAR GRÁFICA DE TA ---
+    const ctxTA = document.getElementById('graficaTA');
+    if (ctxTA) {
+        new Chart(ctxTA, {
+            type: 'line',
+            data: {
+                labels: fechas,
+                datasets: [{
+                    label: 'T/A',
+                    data: ta,
+                    borderColor: 'rgb(246, 194, 62)',
+                    backgroundColor: 'rgba(246, 194, 62, 0.05)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: chartOptions
+        });
+    }
+
+});
+</script>
+{% endblock %}

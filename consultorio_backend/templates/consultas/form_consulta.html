@@ -1,0 +1,217 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Nueva Consulta - Pineda IntegralMedic{% endblock %}
+
+{% block header %}
+    {% if paciente %}
+    Nueva Consulta para {{ paciente.nombre }} {{ paciente.apellidos }}
+    {% else %}
+    Nueva Consulta
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            {% if paciente %}
+            Registrar consulta para {{ paciente.nombre }} {{ paciente.apellidos }}
+            {% else %}
+            Registrar nueva consulta
+            {% endif %}
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            
+            <div class="form-group mb-3">
+                <label for="{{ form.paciente.id_for_label }}">Paciente:</label>
+                {{ form.paciente }}
+                {% if form.paciente.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.paciente.errors }}
+                </div>
+                {% endif %}
+            </div>
+                        
+            <!-- Mediciones antropométricas -->
+            <h5 class="mb-3">Mediciones Antropométricas</h5>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="{{ form.peso.id_for_label }}">Peso (kg):</label>
+                        {{ form.peso }}
+                        {% if form.peso.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.peso.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="{{ form.altura.id_for_label }}">Altura (cm):</label>
+                        {{ form.altura }}
+                        {% if form.altura.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.altura.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="{{ form.tension_arterial.id_for_label }}">Tensión Arterial (T/A):</label>
+                        {{ form.tension_arterial }}
+                        {% if form.tension_arterial.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.tension_arterial.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="{{ form.circunferencia_cintura.id_for_label }}">Cintura (cm):</label>
+                        {{ form.circunferencia_cintura }}
+                        {% if form.circunferencia_cintura.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.circunferencia_cintura.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="{{ form.circunferencia_cadera.id_for_label }}">Cadera (cm):</label>
+                        {{ form.circunferencia_cadera }}
+                        {% if form.circunferencia_cadera.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.circunferencia_cadera.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="{{ form.circunferencia_pecho.id_for_label }}">Pecho (cm):</label>
+                        {{ form.circunferencia_pecho }}
+                        {% if form.circunferencia_pecho.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.circunferencia_pecho.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tratamiento -->
+            <h5 class="mb-3 mt-4">Tratamiento</h5>
+            <div class="form-group mb-3">
+                <label for="{{ form.tratamiento.id_for_label }}">Tratamiento (TX):</label>
+                {{ form.tratamiento }}
+                {% if form.tratamiento.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.tratamiento.errors }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Observaciones -->
+            <h5 class="mb-3 mt-4">Observaciones</h5>
+            <div class="form-group mb-3">
+                <label for="{{ form.observaciones.id_for_label }}">Observaciones:</label>
+                {{ form.observaciones }}
+                {% if form.observaciones.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.observaciones.errors }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% if paciente %}/pacientes/{{ paciente.id }}/{% else %}/consultas/{% endif %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Aplicar clases de Bootstrap a los campos del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const formControls = document.querySelectorAll('input, textarea, select');
+        formControls.forEach(function(element) {
+            element.classList.add('form-control');
+            
+            // Si hay errores, marcar el campo como inválido
+            if (element.nextElementSibling && element.nextElementSibling.classList.contains('invalid-feedback')) {
+                element.classList.add('is-invalid');
+            }
+        });
+        
+        // Calcular IMC automáticamente
+        const pesoInput = document.querySelector('#id_peso');
+        const alturaInput = document.querySelector('#id_altura');
+        
+        if (pesoInput && alturaInput) {
+            const calcularIMC = function() {
+                const peso = parseFloat(pesoInput.value);
+                const altura = parseFloat(alturaInput.value);
+                
+                if (!isNaN(peso) && !isNaN(altura) && altura > 0) {
+                    const imc = peso / Math.pow(altura/100, 2);
+                    
+                    // Mostrar el IMC calculado
+                    let imcInfo = document.getElementById('imc-info');
+                    if (!imcInfo) {
+                        imcInfo = document.createElement('div');
+                        imcInfo.id = 'imc-info';
+                        imcInfo.className = 'alert alert-info mt-3';
+                        alturaInput.parentNode.parentNode.parentNode.after(imcInfo);
+                    }
+                    
+                    let imcClass = 'alert-info';
+                    let imcText = '';
+                    
+                    if (imc < 18.5) {
+                        imcClass = 'alert-warning';
+                        imcText = 'Bajo peso';
+                    } else if (imc < 25) {
+                        imcClass = 'alert-success';
+                        imcText = 'Normal';
+                    } else if (imc < 30) {
+                        imcClass = 'alert-warning';
+                        imcText = 'Sobrepeso';
+                    } else {
+                        imcClass = 'alert-danger';
+                        imcText = 'Obesidad';
+                    }
+                    
+                    imcInfo.className = `alert ${imcClass} mt-3`;
+                    imcInfo.innerHTML = `<strong>IMC calculado:</strong> ${imc.toFixed(2)} - <span>${imcText}</span>`;
+                }
+            };
+            
+            pesoInput.addEventListener('input', calcularIMC);
+            alturaInput.addEventListener('input', calcularIMC);
+            
+            // Calcular IMC inicial si ya hay valores
+            if (pesoInput.value && alturaInput.value) {
+                calcularIMC();
+            }
+        }
+    });
+</script>
+{% endblock %}

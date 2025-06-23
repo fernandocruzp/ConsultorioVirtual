@@ -1,0 +1,167 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Menú - Pineda IntegralMedic{% endblock %}
+
+{% block header %}Menú{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Tarjeta de Pacientes -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Pacientes</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_pacientes }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjeta de Consultas -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Consultas (Mes)</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ consultas_mes }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjeta de Citas -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Citas Pendientes</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ citas_pendientes }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjeta de Ingresos -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Citas para Hoy</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ citas_hoy }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Próximas citas -->
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Próximas Citas</h6>
+                <a href="/agenda/" class="btn btn-sm btn-primary">Ver todas</a>
+            </div>
+            <div class="card-body">
+                {% if proximas_citas %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Paciente</th>
+                                <th>Fecha</th>
+                                <th>Motivo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cita in proximas_citas %}
+                            <tr>
+                                <td>{{ cita.paciente }}</td>
+                                <td>{{ cita.fecha_hora|date:"d/m/Y H:i" }}</td>
+                                <td>{{ cita.motivo }}</td>
+                                <td>
+                                    <a href="/agenda/cita/{{ cita.id }}/" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">No hay citas programadas próximamente.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimas consultas -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Últimas Consultas</h6>
+                <a href="/consultas/" class="btn btn-sm btn-primary">Ver todas</a>
+            </div>
+            <div class="card-body">
+                {% if ultimas_consultas %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Paciente</th>
+                                <th>Fecha</th>
+                                <th>IMC</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for consulta in ultimas_consultas %}
+                            <tr>
+                                <td>{{ consulta.paciente }}</td>
+                                <td>{{ consulta.fecha|date:"d/m/Y" }}</td>
+                                <td>{{ consulta.imc|floatformat:2 }}</td>
+                                <td>
+                                    <a href="/consultas/{{ consulta.id }}/" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">No hay consultas registradas recientemente.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

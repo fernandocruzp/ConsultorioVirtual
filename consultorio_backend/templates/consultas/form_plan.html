@@ -1,0 +1,114 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+    {% if plan %}Editar Plan Nutricional{% else %}Nuevo Plan Nutricional{% endif %} - Pineda IntegralMedic
+{% endblock %}
+
+{% block header %}
+    {% if plan %}
+    Editar Plan Nutricional para {{ plan.consulta.paciente.nombre }} {{ plan.consulta.paciente.apellidos }}
+    {% else %}
+    Nuevo Plan Nutricional para {{ consulta.paciente.nombre }} {{ consulta.paciente.apellidos }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Información de la Consulta</h6>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Paciente:</div>
+            <div class="col-md-9">
+                {% if plan %}
+                {{ plan.consulta.paciente.nombre }} {{ plan.consulta.paciente.apellidos }}
+                {% else %}
+                {{ consulta.paciente.nombre }} {{ consulta.paciente.apellidos }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Fecha de consulta:</div>
+            <div class="col-md-9">
+                {% if plan %}
+                {{ plan.consulta.fecha|date:"d/m/Y" }}
+                {% else %}
+                {{ consulta.fecha|date:"d/m/Y" }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Mediciones:</div>
+            <div class="col-md-9">
+                {% if plan %}
+                Peso: {{ plan.consulta.peso }} kg | 
+                Altura: {{ plan.consulta.altura }} cm | 
+                IMC: {{ plan.consulta.imc|floatformat:2 }}
+                {% if plan.consulta.circunferencia_cintura %}
+                | Cintura: {{ plan.consulta.circunferencia_cintura }} cm
+                {% endif %}
+                {% else %}
+                Peso: {{ consulta.peso }} kg | 
+                Altura: {{ consulta.altura }} cm | 
+                IMC: {{ consulta.imc|floatformat:2 }}
+                {% if consulta.circunferencia_cintura %}
+                | Cintura: {{ consulta.circunferencia_cintura }} cm
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            {% if plan %}Editar Plan Nutricional{% else %}Crear Plan Nutricional{% endif %}
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="form-group mb-3">
+                <label for="{{ form.contenido.id_for_label }}">Contenido del Plan Nutricional:</label>
+                {{ form.contenido }}
+                {% if form.contenido.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.contenido.errors }}
+                </div>
+                {% endif %}
+                <small class="form-text text-muted">Incluya todos los detalles del plan nutricional: recomendaciones, dieta, suplementos, etc.</small>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% if plan %}/consultas/plan/{{ plan.id }}/{% else %}/consultas/{{ consulta.id }}/{% endif %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Aplicar clases de Bootstrap a los campos del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const formControls = document.querySelectorAll('textarea');
+        formControls.forEach(function(element) {
+            element.classList.add('form-control');
+            element.rows = 15;
+            
+            // Si hay errores, marcar el campo como inválido
+            if (element.nextElementSibling && element.nextElementSibling.classList.contains('invalid-feedback')) {
+                element.classList.add('is-invalid');
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,358 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+    {% if paciente %}Editar Paciente{% else %}Nuevo Paciente{% endif %} - Pineda IntegralMedic
+{% endblock %}
+
+{% block header %}
+    {% if paciente %}Editar Paciente{% else %}Nuevo Paciente{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            {% if paciente %}Editar información de {{ paciente.nombre }} {{ paciente.apellidos }}{% else %}Registrar nuevo paciente{% endif %}
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <!-- Información personal básica -->
+            <h5 class="mb-3">Información Personal</h5>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.nombre.id_for_label }}">Nombre:</label>
+                        {{ form.nombre }}
+                        {% if form.nombre.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.nombre.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.apellidos.id_for_label }}">Apellidos:</label>
+                        {{ form.apellidos }}
+                        {% if form.apellidos.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.apellidos.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.fecha_nacimiento.id_for_label }}">Fecha de nacimiento:</label>
+                        {{ form.fecha_nacimiento }}
+                        {% if form.fecha_nacimiento.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.fecha_nacimiento.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.telefono.id_for_label }}">Teléfono:</label>
+                        {{ form.telefono }}
+                        {% if form.telefono.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.telefono.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="{{ form.email.id_for_label }}">Email:</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.email.errors }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Información socioeconómica -->
+            <hr class="my-4">
+            <h5 class="mb-3">Información Socioeconómica</h5>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.estado_civil.id_for_label }}">Estado civil:</label>
+                        {{ form.estado_civil }}
+                        {% if form.estado_civil.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.estado_civil.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.escolaridad.id_for_label }}">Escolaridad:</label>
+                        {{ form.escolaridad }}
+                        {% if form.escolaridad.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.escolaridad.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.ocupacion.id_for_label }}">Ocupación:</label>
+                        {{ form.ocupacion }}
+                        {% if form.ocupacion.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.ocupacion.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.rfc.id_for_label }}">RFC:</label>
+                        {{ form.rfc }}
+                        {% if form.rfc.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.rfc.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Antecedentes médicos -->
+            <hr class="my-4">
+            <h5 class="mb-3">Antecedentes Médicos</h5>
+            
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <div class="form-check">
+                        {{ form.diabetes }}
+                        <label class="form-check-label" for="{{ form.diabetes.id_for_label }}">
+                            Diabetes
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        {{ form.hipertension_arterial }}
+                        <label class="form-check-label" for="{{ form.hipertension_arterial.id_for_label }}">
+                            Hipertensión arterial
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        {{ form.obesidad }}
+                        <label class="form-check-label" for="{{ form.obesidad.id_for_label }}">
+                            Obesidad
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        {{ form.cancer }}
+                        <label class="form-check-label" for="{{ form.cancer.id_for_label }}">
+                            Cáncer
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="{{ form.otra_enfermedad.id_for_label }}">Otra enfermedad:</label>
+                {{ form.otra_enfermedad }}
+                {% if form.otra_enfermedad.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.otra_enfermedad.errors }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="{{ form.medicamentos.id_for_label }}">Medicamentos:</label>
+                {{ form.medicamentos }}
+                {% if form.medicamentos.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.medicamentos.errors }}
+                </div>
+                {% endif %}
+                <small class="form-text text-muted">Liste los medicamentos que toma actualmente.</small>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="{{ form.alergias.id_for_label }}">Alergias:</label>
+                {{ form.alergias }}
+                {% if form.alergias.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.alergias.errors }}
+                </div>
+                {% endif %}
+                <small class="form-text text-muted">Deje en blanco si no tiene alergias conocidas.</small>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="{{ form.antecedentes.id_for_label }}">Antecedentes médicos adicionales:</label>
+                {{ form.antecedentes }}
+                {% if form.antecedentes.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.antecedentes.errors }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Hábitos -->
+            <hr class="my-4">
+            <h5 class="mb-3">Hábitos</h5>
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="form-check">
+                        {{ form.fuma }}
+                        <label class="form-check-label" for="{{ form.fuma.id_for_label }}">
+                            Fuma
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check">
+                        {{ form.bebe }}
+                        <label class="form-check-label" for="{{ form.bebe.id_for_label }}">
+                            Bebe alcohol
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check">
+                        {{ form.actividad_fisica }}
+                        <label class="form-check-label" for="{{ form.actividad_fisica.id_for_label }}">
+                            Realiza actividad física
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Horarios de alimentación -->
+            <hr class="my-4">
+            <h5 class="mb-3">Horarios de Alimentación</h5>
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="{{ form.horario_desayuno.id_for_label }}">Horario de desayuno:</label>
+                        {{ form.horario_desayuno }}
+                        {% if form.horario_desayuno.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.horario_desayuno.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="{{ form.horario_comida.id_for_label }}">Horario de comida:</label>
+                        {{ form.horario_comida }}
+                        {% if form.horario_comida.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.horario_comida.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="{{ form.horario_cena.id_for_label }}">Horario de cena:</label>
+                        {{ form.horario_cena }}
+                        {% if form.horario_cena.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.horario_cena.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Síntomas digestivos -->
+            <hr class="my-4">
+            <h5 class="mb-3">Síntomas Digestivos</h5>
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="form-check">
+                        {{ form.distension_despues_comer }}
+                        <label class="form-check-label" for="{{ form.distension_despues_comer.id_for_label }}">
+                            Distensión después de comer
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check">
+                        {{ form.dolor_estomago }}
+                        <label class="form-check-label" for="{{ form.dolor_estomago.id_for_label }}">
+                            Dolor en la boca del estómago
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check">
+                        {{ form.estrenimiento }}
+                        <label class="form-check-label" for="{{ form.estrenimiento.id_for_label }}">
+                            Estreñimiento
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            <div class="d-flex justify-content-between">
+                <a href="{% if paciente %}/pacientes/{{ paciente.id }}/{% else %}/pacientes/{% endif %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Aplicar clases de Bootstrap a los campos del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const formControls = document.querySelectorAll('input:not([type="checkbox"]), textarea, select');
+        formControls.forEach(function(element) {
+            if (!element.classList.contains('form-check-input')) {
+                element.classList.add('form-control');
+            }
+            
+            // Si hay errores, marcar el campo como inválido
+            if (element.nextElementSibling && element.nextElementSibling.classList.contains('invalid-feedback')) {
+                element.classList.add('is-invalid');
+            }
+        });
+        
+        // Aplicar clases a los checkboxes
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(function(checkbox) {
+            checkbox.classList.add('form-check-input');
+        });
+    });
+</script>
+{% endblock %}

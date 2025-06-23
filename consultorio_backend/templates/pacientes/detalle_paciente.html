@@ -1,0 +1,422 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ paciente.nombre }} {{ paciente.apellidos }} - Pineda IntegralMedic{% endblock %}
+
+{% block header %}Paciente: {{ paciente.nombre }} {{ paciente.apellidos }}{% endblock %}
+
+{% block header_actions %}
+<div>
+    <a href="/pacientes/{{ paciente.id }}/editar/" class="btn btn-warning">
+        <i class="fas fa-edit"></i> Editar
+    </a>
+    <a href="/consultas/nuevo/{{ paciente.id }}/" class="btn btn-success">
+        <i class="fas fa-clipboard-list"></i> Nueva Consulta
+    </a>
+    <a href="/agenda/nueva/{{ paciente.id }}/" class="btn btn-primary">
+        <i class="fas fa-calendar-plus"></i> Nueva Cita
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Información personal del paciente -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Información Personal</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Nombre completo:</div>
+                    <div class="col-md-8">{{ paciente.nombre }} {{ paciente.apellidos }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Fecha de nacimiento:</div>
+                    <div class="col-md-8">{{ paciente.fecha_nacimiento|date:"d/m/Y" }} ({{ paciente.calcular_edad }} años)</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Email:</div>
+                    <div class="col-md-8">{{ paciente.email }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Teléfono:</div>
+                    <div class="col-md-8">{{ paciente.telefono }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Estado civil:</div>
+                    <div class="col-md-8">{{ paciente.get_estado_civil_display|default:"No registrado" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Escolaridad:</div>
+                    <div class="col-md-8">{{ paciente.get_escolaridad_display|default:"No registrada" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Ocupación:</div>
+                    <div class="col-md-8">{{ paciente.ocupacion|default:"No registrada" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">RFC:</div>
+                    <div class="col-md-8">{{ paciente.rfc|default:"No registrado" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Fecha de registro:</div>
+                    <div class="col-md-8">{{ paciente.fecha_registro|date:"d/m/Y" }}</div>
+		    
+                </div>
+		<hr> <div class="row mb-3 align-items-center">
+                            <div class="col-md-4 font-weight-bold">
+                                <i class="fas fa-key text-warning mr-2"></i>Llave de Acceso:
+                            </div>
+                            <div class="col-md-8">
+                                <span id="llave-secreta" style="display: none; font-family: monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 4px;">{{ paciente.llave_unica }}</span>
+                                
+                                <span id="llave-oculta" style="font-family: monospace;">••••••••••••••••••••••••••••••••••••</span>
+                                
+                                <button type="button" class="btn btn-sm btn-outline-secondary ml-2" onclick="toggleLlave()" title="Mostrar / Ocultar">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button id="btn-copiar" type="button" class="btn btn-sm btn-outline-secondary" onclick="copiarLlave()" title="Copiar al portapapeles">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+            </div>
+        </div>
+        
+        <!-- Horarios de alimentación -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Horarios de Alimentación</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Desayuno:</div>
+                    <div class="col-md-8">{{ paciente.horario_desayuno|time:"H:i"|default:"No registrado" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Comida:</div>
+                    <div class="col-md-8">{{ paciente.horario_comida|time:"H:i"|default:"No registrado" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Cena:</div>
+                    <div class="col-md-8">{{ paciente.horario_cena|time:"H:i"|default:"No registrado" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Información médica -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Antecedentes Médicos</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6 font-weight-bold">Diabetes:</div>
+                    <div class="col-md-6">
+                        {% if paciente.diabetes %}
+                            <span class="badge bg-danger">Sí</span>
+                        {% else %}
+                            <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 font-weight-bold">Hipertensión arterial:</div>
+                    <div class="col-md-6">
+                        {% if paciente.hipertension_arterial %}
+                            <span class="badge bg-danger">Sí</span>
+                        {% else %}
+                            <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 font-weight-bold">Obesidad:</div>
+                    <div class="col-md-6">
+                        {% if paciente.obesidad %}
+                            <span class="badge bg-danger">Sí</span>
+                        {% else %}
+                            <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 font-weight-bold">Cáncer:</div>
+                    <div class="col-md-6">
+                        {% if paciente.cancer %}
+                            <span class="badge bg-danger">Sí</span>
+                        {% else %}
+                            <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Otra enfermedad:</div>
+                    <div class="col-md-8">{{ paciente.otra_enfermedad|default:"No registrada" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Medicamentos:</div>
+                    <div class="col-md-8">{{ paciente.medicamentos|default:"No registrados" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Alergias:</div>
+                    <div class="col-md-8">{{ paciente.alergias|default:"No registradas" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Antecedentes:</div>
+                    <div class="col-md-8">{{ paciente.antecedentes|default:"No registrados" }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hábitos y síntomas -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Hábitos y Síntomas</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6 font-weight-bold">Fuma:</div>
+                    <div class="col-md-6">
+                        {% if paciente.fuma %}
+                            <span class="badge bg-danger">Sí</span>
+                        {% else %}
+                            <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 font-weight-bold">Bebe alcohol:</div>
+                    <div class="col-md-6">
+                        {% if paciente.bebe %}
+                            <span class="badge bg-danger">Sí</span>
+                        {% else %}
+                            <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 font-weight-bold">Actividad física:</div>
+                    <div class="col-md-6">
+                        {% if paciente.actividad_fisica %}
+                            <span class="badge bg-success">Sí</span>
+                        {% else %}
+                            <span class="badge bg-danger">No</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 font-weight-bold">Distensión después de comer:</div>
+                    <div class="col-md-6">
+                        {% if paciente.distension_despues_comer %}
+                            <span class="badge bg-danger">Sí</span>
+                        {% else %}
+                            <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 font-weight-bold">Dolor en la boca del estómago:</div>
+                    <div class="col-md-6">
+                        {% if paciente.dolor_estomago %}
+                            <span class="badge bg-danger">Sí</span>
+                        {% else %}
+                            <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 font-weight-bold">Estreñimiento:</div>
+                    <div class="col-md-6">
+                        {% if paciente.estrenimiento %}
+                            <span class="badge bg-danger">Sí</span>
+                        {% else %}
+                            <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if ultima_consulta %}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Última Consulta ({{ ultima_consulta.fecha|date:"d/m/Y" }})</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Peso:</div>
+                    <div class="col-md-8">{{ ultima_consulta.peso }} kg</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Altura:</div>
+                    <div class="col-md-8">{{ ultima_consulta.altura }} cm</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">IMC:</div>
+                    <div class="col-md-8">{{ ultima_consulta.imc|floatformat:2 }}</div>
+                </div>
+                {% if ultima_consulta.circunferencia_cintura %}
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Cintura:</div>
+                    <div class="col-md-8">{{ ultima_consulta.circunferencia_cintura }} cm</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Historial de consultas -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">Historial de Consultas</h6>
+      <a href="/pacientes/historial/{{ paciente.id }}/" class="btn btn-sm btn-warning">
+            Ver historial completo
+        </a>
+    </div>
+    <div class="card-body">
+        {% if consultas %}
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Peso (kg)</th>
+                        <th>Altura (cm)</th>
+                        <th>IMC</th>
+                        <th>Cintura (cm)</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for consulta in consultas %}
+                    <tr>
+                        <td>{{ consulta.fecha|date:"d/m/Y" }}</td>
+                        <td>{{ consulta.peso }}</td>
+                        <td>{{ consulta.altura }}</td>
+                        <td>{{ consulta.imc|floatformat:2 }}</td>
+                        <td>{{ consulta.circunferencia_cintura|default:"-" }}</td>
+                        <td>
+                            <a href="/consultas/{{ consulta.id }}/" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if consulta.plan %}
+                            <a href="/consultas/plan/{{ consulta.plan.id }}/" class="btn btn-sm btn-success">
+                                <i class="fas fa-file-medical"></i> Plan
+                            </a>
+                            {% else %}
+                            <a href="/consultas/plan/nuevo/{{ consulta.id }}/" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-plus"></i> Plan
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center">No hay consultas registradas para este paciente.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Próximas citas -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Próximas Citas</h6>
+    </div>
+    <div class="card-body">
+        {% if citas %}
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cita in citas %}
+                    <tr>
+                        <td>{{ cita.fecha_hora|date:"d/m/Y H:i" }}</td>
+                        <td>{{ cita.motivo }}</td>
+                        <td>
+                            {% if cita.estado == 'programada' %}
+                            <span class="badge bg-primary">Programada</span>
+                            {% elif cita.estado == 'completada' %}
+                            <span class="badge bg-success">Completada</span>
+                            {% elif cita.estado == 'cancelada' %}
+                            <span class="badge bg-danger">Cancelada</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/agenda/cita/{{ cita.id }}/" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if cita.estado == 'programada' %}
+                            <a href="/agenda/cita/{{ cita.id }}/completar/" class="btn btn-sm btn-success">
+                                <i class="fas fa-check"></i>
+                            </a>
+                            <a href="/agenda/cita/{{ cita.id }}/cancelar/" class="btn btn-sm btn-danger">
+                                <i class="fas fa-times"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center">No hay citas programadas para este paciente.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Función para mostrar u ocultar la llave
+    function toggleLlave() {
+        var llaveSecreta = document.getElementById('llave-secreta');
+        var llaveOculta = document.getElementById('llave-oculta');
+
+        if (llaveSecreta.style.display === 'none') {
+            llaveSecreta.style.display = 'inline';
+            llaveOculta.style.display = 'none';
+        } else {
+            llaveSecreta.style.display = 'none';
+            llaveOculta.style.display = 'inline';
+        }
+    }
+
+    // Función para copiar la llave al portapapeles
+    function copiarLlave() {
+        // Obtiene el texto de la llave
+        var llaveTexto = document.getElementById('llave-secreta').innerText;
+        
+        // Usa la API del navegador para copiar
+        navigator.clipboard.writeText(llaveTexto).then(function() {
+            // Éxito: notifica al usuario cambiando el botón temporalmente
+            var btnCopiar = document.getElementById('btn-copiar');
+            btnCopiar.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+            
+            setTimeout(function() {
+                btnCopiar.innerHTML = '<i class="fas fa-copy"></i>';
+            }, 2000); // Vuelve al estado original después de 2 segundos
+
+        }, function(err) {
+            // Error
+            alert('Error al intentar copiar la llave: ', err);
+        });
+    }
+</script>
+{% endblock %}

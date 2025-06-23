@@ -1,0 +1,69 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+    {% if receta %}Editar Receta{% else %}Nueva Receta{% endif %} - Pineda IntegralMedic
+{% endblock %}
+
+{% block header %}
+    {% if receta %}
+    Editar Receta para {{ receta.consulta.paciente.nombre }} {{ receta.consulta.paciente.apellidos }}
+    {% else %}
+    Nueva Receta para {{ consulta.paciente.nombre }} {{ consulta.paciente.apellidos }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            {% if receta %}
+            Editar receta para {{ receta.consulta.paciente.nombre }} {{ receta.consulta.paciente.apellidos }}
+            {% else %}
+            Crear receta para {{ consulta.paciente.nombre }} {{ consulta.paciente.apellidos }}
+            {% endif %}
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="form-group mb-3">
+                <label for="{{ form.medicamentos.id_for_label }}">Medicamentos:</label>
+                {{ form.medicamentos }}
+                {% if form.medicamentos.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.medicamentos.errors }}
+                </div>
+                {% endif %}
+                <small class="form-text text-muted">Ingrese la lista de medicamentos, dosis y frecuencia.</small>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% if receta %}/consultas/receta/{{ receta.id }}/{% else %}/consultas/{{ consulta.id }}/{% endif %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Aplicar clases de Bootstrap a los campos del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const formControls = document.querySelectorAll('textarea');
+        formControls.forEach(function(element) {
+            element.classList.add('form-control');
+            
+            // Si hay errores, marcar el campo como inválido
+            if (element.nextElementSibling && element.nextElementSibling.classList.contains('invalid-feedback')) {
+                element.classList.add('is-invalid');
+            }
+        });
+    });
+</script>
+{% endblock %}

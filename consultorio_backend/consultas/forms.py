@@ -1,0 +1,44 @@
+from django import forms
+from .models import Consulta, PlanNutricional, Receta
+from pacientes.models import Paciente
+
+class ConsultaForm(forms.ModelForm):
+    paciente = forms.ModelChoiceField(
+        queryset=Paciente.objects.all().order_by('apellidos', 'nombre'),
+        empty_label="Seleccione un paciente",
+        required=True
+    )
+    
+    class Meta:
+        model = Consulta
+        fields = [
+            'paciente', 
+            'peso', 
+            'altura', 
+            'circunferencia_cintura',
+            'circunferencia_cadera',
+            'circunferencia_pecho',
+            'tension_arterial',
+            'tratamiento',
+            'observaciones'
+        ]
+        widgets = {
+            'tratamiento': forms.Textarea(attrs={'rows': 3}),
+            'observaciones': forms.Textarea(attrs={'rows': 5}),
+        }
+
+class PlanNutricionalForm(forms.ModelForm):
+    class Meta:
+        model = PlanNutricional
+        fields = ['contenido']
+        widgets = {
+            'contenido': forms.Textarea(attrs={'rows': 15}),
+        }
+
+class RecetaForm(forms.ModelForm):
+    class Meta:
+        model = Receta
+        fields = ['medicamentos']
+        widgets = {
+            'medicamentos': forms.Textarea(attrs={'rows': 10}),
+        }

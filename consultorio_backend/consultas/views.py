@@ -1,0 +1,745 @@
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.http import HttpResponse
+from .models import Consulta, PlanNutricional, Receta
+from .forms import ConsultaForm, PlanNutricionalForm, RecetaForm
+from pacientes.models import Paciente
+import io
+from reportlab.lib import colors
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from django.core.mail import EmailMessage
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle, Image
+from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT 
+import json
+import os
+
+@login_required
+def lista_consultas(request):
+    query = request.GET.get('q', '')
+    if query:
+        consultas_list = Consulta.objects.filter(
+            Q(paciente__nombre__icontains=query) | 
+            Q(paciente__apellidos__icontains=query)
+        ).select_related('paciente', 'plan').order_by('-fecha')
+    else:
+        consultas_list = Consulta.objects.all().select_related('paciente', 'plan').order_by('-fecha')
+    
+    paginator = Paginator(consultas_list, 10)  # 10 consultas por página
+    page = request.GET.get('page')
+    consultas = paginator.get_page(page)
+    
+    return render(request, 'consultas/lista_consultas.html', {
+        'consultas': consultas,
+        'is_paginated': consultas.has_other_pages(),
+        'page_obj': consultas,
+    })
+
+@login_required
+def detalle_consulta(request, consulta_id):
+    consulta = get_object_or_404(Consulta, id=consulta_id)
+    
+    # Obtener historial de consultas del paciente
+    historial_consultas = Consulta.objects.filter(
+        paciente=consulta.paciente
+    ).exclude(id=consulta_id).order_by('-fecha')
+    
+    return render(request, 'consultas/detalle_consulta.html', {
+        'consulta': consulta,
+        'historial_consultas': historial_consultas,
+    })
+
+@login_required
+def historial_completo(request, consulta_id):
+    consulta = get_object_or_404(Consulta, id=consulta_id)
+    
+    # Obtener historial de consultas del paciente
+    historial_consultas = Consulta.objects.filter(
+        paciente=consulta.paciente
+    ).order_by('-fecha')
+
+    historial_grafica= list(historial_consultas.reverse())
+
+    #Obtenemos datos separados
+    fechas=[c.fecha.strftime('%d/%m/%Y') for c in historial_grafica]
+    cadera=[c.circunferencia_cadera if c.circunferencia_cadera else 0 for c in historial_grafica]
+    cintura=[c.circunferencia_cintura if c.circunferencia_cintura else 0 for c in historial_grafica]
+    pecho=[c.circunferencia_pecho if c.circunferencia_pecho else 0 for c in historial_grafica]
+    ta=[c.tension_arterial if c.tension_arterial else 0 for c in historial_grafica]
+    peso=[c.peso if c.peso else 0 for c in historial_grafica]
+    imc=[round(c.imc,2) if c.imc else 0 for c in historial_grafica]
+    return render(request, 'consultas/historial_completo.html', {
+        'consulta': consulta,
+        'historial_consultas': historial_consultas,
+        'fechas_json': json.dumps(fechas),
+        'cadera_json': json.dumps(cadera),
+        'cintura_json': json.dumps(cintura),
+        'pecho_json': json.dumps(pecho),
+        'ta_json': json.dumps(ta),
+        'peso_json': json.dumps(peso),
+        'imc_json': json.dumps(imc),
+    })
+
+@login_required
+def nueva_consulta(request, paciente_id=None):
+    print(paciente_id)
+    paciente = None
+    if paciente_id:
+        paciente = get_object_or_404(Paciente, id=paciente_id)
+    
+    if request.method == 'POST':
+        form = ConsultaForm(request.POST)
+        if form.is_valid():
+            consulta = form.save(commit=False)
+            if paciente:
+                consulta.paciente = paciente
+            consulta.save()
+            messages.success(request, f'Consulta para {consulta.paciente.nombre} {consulta.paciente.apellidos} registrada correctamente.')
+            return redirect('detalle_consulta', consulta_id=consulta.id)
+    else:
+        initial_data = {}
+        if paciente:
+            initial_data['paciente'] = paciente
+            # Obtener la última consulta para pre-llenar la altura
+            ultima_consulta = Consulta.objects.filter(paciente=paciente).order_by('-fecha').first()
+            if ultima_consulta:
+                initial_data['altura'] = ultima_consulta.altura
+        
+        form = ConsultaForm(initial=initial_data)
+        
+        # Si hay un paciente seleccionado, no mostrar el campo de selección de paciente
+        #if paciente:
+         #   form.fields['paciente'].widget = form.fields['paciente'].hidden_widget()
+    
+    return render(request, 'consultas/form_consulta.html', {
+        'form': form,
+        'paciente': paciente,
+    })
+
+@login_required
+def detalle_plan(request, plan_id):
+    plan = get_object_or_404(PlanNutricional, id=plan_id)
+    return render(request, 'consultas/plan_nutricional.html', {
+        'plan': plan,
+    })
+
+@login_required
+def nuevo_plan(request, consulta_id):
+    consulta = get_object_or_404(Consulta, id=consulta_id)
+    
+    # Verificar si ya existe un plan para esta consulta
+    if hasattr(consulta, 'plan'):
+        messages.warning(request, 'Esta consulta ya tiene un plan nutricional.')
+        return redirect('detalle_plan', plan_id=consulta.plan.id)
+    
+    if request.method == 'POST':
+        form = PlanNutricionalForm(request.POST)
+        if form.is_valid():
+            plan = form.save(commit=False)
+            plan.consulta = consulta
+            plan.save()
+            messages.success(request, f'Plan nutricional para {consulta.paciente.nombre} {consulta.paciente.apellidos} creado correctamente.')
+            return redirect('detalle_plan', plan_id=plan.id)
+    else:
+        form = PlanNutricionalForm()
+    
+    return render(request, 'consultas/form_plan.html', {
+        'form': form,
+        'consulta': consulta,
+    })
+
+@login_required
+def editar_plan(request, plan_id):
+    plan = get_object_or_404(PlanNutricional, id=plan_id)
+    
+    if request.method == 'POST':
+        form = PlanNutricionalForm(request.POST, instance=plan)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Plan nutricional para {plan.consulta.paciente.nombre} {plan.consulta.paciente.apellidos} actualizado correctamente.')
+            return redirect('detalle_plan', plan_id=plan.id)
+    else:
+        form = PlanNutricionalForm(instance=plan)
+    
+    return render(request, 'consultas/form_plan.html', {
+        'form': form,
+        'plan': plan,
+    })
+
+@login_required
+def generar_pdf_plan(request, plan_id):
+    
+    plan = get_object_or_404(PlanNutricional, id=plan_id)
+    
+    # Crear un buffer para el PDF
+    buffer = io.BytesIO()
+
+    
+    # Crear el objeto PDF usando ReportLab
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    # Define estilos para los párrafos
+    styles = getSampleStyleSheet()
+    style_normal = styles['Normal']
+    style_normal.leading = 14
+    style_bold = styles['h2']
+
+    # --- ENCABEZADO ---
+    logo_path = None
+    try:
+        # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
+        logo_filename = 'Logo2.png' 
+        logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
+        if os.path.exists(logo_path_full):
+            logo_path = logo_path_full
+    except (IndexError, AttributeError):
+        pass
+
+    # --- ENCABEZADO ---
+    y_position = height - inch 
+
+    if logo_path:
+        p.drawImage(logo_path, x=2.6*inch, y=height - 2.50*inch, width=3.5*inch, preserveAspectRatio=True, mask='auto')
+
+    p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
+    
+    # Título
+    p.setFont("Helvetica-Bold", 18)
+    p.drawCentredString(width/2, height - 1.5*inch, "Plan Nutricional")
+    
+    # Información del paciente
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 2*inch, "Paciente:")
+    p.setFont("Helvetica", 12)
+    p.drawString(2*inch, height - 2*inch, f"{plan.consulta.paciente.nombre} {plan.consulta.paciente.apellidos}")
+    
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 2.5*inch, "Fecha:")
+    p.setFont("Helvetica", 12)
+    p.drawString(2*inch, height - 2.5*inch, plan.fecha_creacion.strftime("%d/%m/%Y"))
+    
+    # Mediciones
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 3*inch, "Mediciones:")
+    p.setFont("Helvetica", 12)
+    p.drawString(2*inch, height - 3*inch, 
+                f"Peso: {plan.consulta.peso} kg | Altura: {plan.consulta.altura} cm | IMC: {plan.consulta.imc:.2f}")
+    
+    # Contenido del plan
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(inch, height - 4*inch, "Plan Nutricional:")
+
+    contenido_html = plan.contenido.replace('\n', '<br/>')
+
+    plan_paragraph = Paragraph(contenido_html, style_normal)
+
+    plan_paragraph.wrapOn(p, width - 2*inch, height - 5*inch)
+    plan_paragraph.drawOn(p, inch, height - 4.5*inch - plan_paragraph.height)
+           
+    # Pie de página
+    p.line(inch, 1.1*inch, width - inch, 1.1*inch)
+    p.setFont("Helvetica-Oblique", 10)
+    p.drawCentredString(width / 2, 0.25 * inch, "Pineda IntegralMedic - Plan Nutricional Personalizado")
+    
+    # Cerrar el PDF
+    p.showPage()
+    p.save()
+    
+    # Obtener el valor del buffer y crear la respuesta HTTP
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Plan_Nutricional_{plan.consulta.paciente.apellidos}.pdf"'
+    
+    return response
+
+@login_required
+def generar_pdf_historial(request, consulta_id):
+    consulta = get_object_or_404(Consulta, id=consulta_id)
+    
+    # Obtener historial de consultas del paciente
+    historial_consultas = Consulta.objects.filter(
+        paciente=consulta.paciente
+    ).order_by('-fecha')
+    
+    # Crear un buffer para el PDF
+    buffer = io.BytesIO()
+
+    
+    # Crear el objeto PDF usando ReportLab
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    # Define estilos para los párrafos
+    styles = getSampleStyleSheet()
+    style_normal = styles['Normal']
+    style_normal.leading = 14
+    style_bold = styles['h2']
+
+     # --- ENCABEZADO ---
+    logo_path = None
+    try:
+        # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
+        logo_filename = 'Logo2.png' 
+        logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
+        if os.path.exists(logo_path_full):
+            logo_path = logo_path_full
+    except (IndexError, AttributeError):
+        pass
+
+    # --- ENCABEZADO ---
+    y_position = height - inch 
+
+    if logo_path:
+        p.drawImage(logo_path, x=2.6*inch, y=height - 2.50*inch, width=3.5*inch, preserveAspectRatio=True, mask='auto')
+
+    p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
+    
+    # Título
+    p.setFont("Helvetica-Bold", 18)
+    p.drawCentredString(width/2, height - 1.8*inch, "HISTORIAL")
+    
+    # Información del paciente
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 2.5*inch, "Paciente:")
+    p.setFont("Helvetica", 12)
+    p.drawString(2*inch, height - 2.5*inch, f"{consulta.paciente.nombre} {consulta.paciente.apellidos}")
+    
+    # Contenido del historial
+    data = [[
+        h.fecha.strftime('%d/%m/%Y'),                 
+        f"{h.circunferencia_cintura} cm",
+        f"{h.circunferencia_cadera} cm",
+        f"{h.circunferencia_pecho} cm",
+        f"{h.tratamiento}",
+        f"{h.tension_arterial}",
+        f"{h.peso} kg",               
+        f"{h.altura} cm",             
+        f"{h.imc:.2f}"
+    ]
+    for h in historial_consultas]
+
+    data.insert(0,["Fecha" , "Cintura", "Cadera", "Pecho", "Tx", "T/A","Peso", "Altura", "IMC"])
+
+    plan_table = Table(data, colWidths=[1.0*inch, 0.75*inch,0.75*inch,0.75*inch, 0.5*inch,0.75*inch,0.75*inch,0.75*inch,0.5*inch])
+
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4F81BD')), # Color de fondo para la cabecera
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke), # Color de texto para la cabecera
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'), # Alineación centrada para toda la tabla
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), # Alineación vertical centrada
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), # Fuente en negrita para la cabecera
+        ('FONTSIZE', (0, 0), (-1, 0), 12), # Tamaño de fuente para la cabecera
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12), # Padding inferior para la cabecera
+        
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige), # Color de fondo para las filas de datos
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black), # Color de texto para los datos
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'), # Fuente para los datos
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black) # Dibuja una cuadrícula en toda la tabla
+    ])
+    plan_table.setStyle(style)
+
+    y_position = height - 4*inch
+    ancho_necesario, alto_necesario = plan_table.wrapOn(p, width - 2*inch, 0)
+    plan_table.drawOn(p, inch, y_position - alto_necesario)
+           
+    # Pie de página
+    p.line(inch, 1.1*inch, width - inch, 1.1*inch)
+    p.setFont("Helvetica-Oblique", 10)
+    p.drawCentredString(width/2, inch, "Pineda IntegralMedic - Historial")
+    
+    # Cerrar el PDF
+    p.showPage()
+    p.save()
+    
+    # Obtener el valor del buffer y crear la respuesta HTTP
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Carnet_{consulta.paciente.apellidos}.pdf"'
+    
+    return response
+
+@login_required
+def enviar_historial_email(request, consulta_id):
+    consulta = get_object_or_404(Consulta, id=consulta_id)
+    
+    # Obtener historial de consultas del paciente
+    historial_consultas = Consulta.objects.filter(
+        paciente=consulta.paciente
+    ).order_by('-fecha')
+    
+    # Crear un buffer para el PDF
+    buffer = io.BytesIO()
+
+    
+    # Crear el objeto PDF usando ReportLab
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    # Define estilos para los párrafos
+    styles = getSampleStyleSheet()
+    style_normal = styles['Normal']
+    style_normal.leading = 14
+    style_bold = styles['h2']
+
+     # --- ENCABEZADO ---
+    logo_path = None
+    try:
+        # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
+        logo_filename = 'Logo2.png' 
+        logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
+        if os.path.exists(logo_path_full):
+            logo_path = logo_path_full
+    except (IndexError, AttributeError):
+        pass
+
+    # --- ENCABEZADO ---
+    y_position = height - inch 
+
+    if logo_path:
+        p.drawImage(logo_path, x=2.6*inch, y=height - 2.50*inch, width=3.5*inch, preserveAspectRatio=True, mask='auto')
+
+    p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
+    
+    # Título
+    p.setFont("Helvetica-Bold", 18)
+    p.drawCentredString(width/2, height - 1.8*inch, "HISTORIAL")
+    
+    # Información del paciente
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 2.5*inch, "Paciente:")
+    p.setFont("Helvetica", 12)
+    p.drawString(2*inch, height - 2.5*inch, f"{consulta.paciente.nombre} {consulta.paciente.apellidos}")
+    
+    # Contenido del historial
+    data = [[
+        h.fecha.strftime('%d/%m/%Y'),                 
+        f"{h.circunferencia_cintura} cm",
+        f"{h.circunferencia_cadera} cm",
+        f"{h.circunferencia_pecho} cm",
+        f"{h.tratamiento}",
+        f"{h.tension_arterial}",
+        f"{h.peso} kg",               
+        f"{h.altura} cm",             
+        f"{h.imc:.2f}"
+    ]
+    for h in historial_consultas]
+
+    data.insert(0,["Fecha" , "Cintura", "Cadera", "Pecho", "Tx", "T/A","Peso", "Altura", "IMC"])
+
+    plan_table = Table(data, colWidths=[1.0*inch, 0.75*inch,0.75*inch,0.75*inch, 0.5*inch,0.75*inch,0.75*inch,0.75*inch,0.5*inch])
+
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4F81BD')), # Color de fondo para la cabecera
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke), # Color de texto para la cabecera
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'), # Alineación centrada para toda la tabla
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), # Alineación vertical centrada
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), # Fuente en negrita para la cabecera
+        ('FONTSIZE', (0, 0), (-1, 0), 12), # Tamaño de fuente para la cabecera
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12), # Padding inferior para la cabecera
+        
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige), # Color de fondo para las filas de datos
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black), # Color de texto para los datos
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'), # Fuente para los datos
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black) # Dibuja una cuadrícula en toda la tabla
+    ])
+    plan_table.setStyle(style)
+
+    y_position = height - 4*inch
+    ancho_necesario, alto_necesario = plan_table.wrapOn(p, width - 2*inch, 0)
+    plan_table.drawOn(p, inch, y_position - alto_necesario)
+           
+    # Pie de página
+    p.line(inch, 1.1*inch, width - inch, 1.1*inch)
+    p.setFont("Helvetica-Oblique", 10)
+    p.drawCentredString(width/2, inch, "Pineda IntegralMedic - Historial")
+    
+    # Cerrar el PDF
+    p.showPage()
+    p.save()
+    
+    # Obtener el valor del buffer y crear la respuesta HTTP
+    buffer.seek(0)
+    email = EmailMessage(
+        subject=f'Carnet - Pineda IntegralMedic',
+        body=f'Estimado/a {consulta.paciente.nombre},\n\nAdjunto encontrará su carnet actualizado.\n\nSaludos cordiales,\nPineda IntegralMedic',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[consulta.paciente.email],
+    )
+    email.attach(f'Carnet_{consulta.paciente.apellidos}.pdf', buffer.getvalue(), 'application/pdf')
+    
+    try:
+        email.send()
+        messages.success(request, f'Plan nutricional enviado correctamente a {consulta.paciente.email}.')
+    except Exception as e:
+        messages.error(request, f'Error al enviar el correo: {str(e)}')
+    
+    return redirect('historial_completo',consulta.id)
+
+@login_required
+def enviar_plan_email(request, plan_id):
+    user = request.user
+    plan = get_object_or_404(PlanNutricional, id=plan_id)
+    paciente = plan.consulta.paciente
+    
+    if not paciente.email:
+        messages.error(request, f'El paciente {paciente.nombre} {paciente.apellidos} no tiene un correo electrónico registrado.')
+        return redirect('detalle_plan', plan_id=plan.id)
+    
+    # Generar el PDF
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    # Define estilos para los párrafos
+    styles = getSampleStyleSheet()
+    style_normal = styles['Normal']
+    style_normal.leading = 14
+    style_bold = styles['h2']
+
+     # --- ENCABEZADO ---
+    logo_path = None
+    try:
+        # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
+        logo_filename = 'Logo2.png' 
+        logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
+        if os.path.exists(logo_path_full):
+            logo_path = logo_path_full
+    except (IndexError, AttributeError):
+        pass
+
+    # --- ENCABEZADO ---
+    y_position = height - inch 
+
+    if logo_path:
+        p.drawImage(logo_path, x=2.6*inch, y=height - 2.50*inch, width=3.5*inch, preserveAspectRatio=True, mask='auto')
+
+    p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
+    
+    # Título
+    p.setFont("Helvetica-Bold", 18)
+    p.drawCentredString(width/2, height - inch, "Plan Nutricional")
+    
+    # Información del paciente
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 2*inch, "Paciente:")
+    p.setFont("Helvetica", 12)
+    p.drawString(2*inch, height - 2*inch, f"{paciente.nombre} {paciente.apellidos}")
+    
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 2.5*inch, "Fecha:")
+    p.setFont("Helvetica", 12)
+    p.drawString(2*inch, height - 2.5*inch, plan.fecha_creacion.strftime("%d/%m/%Y"))
+    
+    # Mediciones
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 3*inch, "Mediciones:")
+    p.setFont("Helvetica", 12)
+    p.drawString(2*inch, height - 3*inch, 
+                f"Peso: {plan.consulta.peso} kg | Altura: {plan.consulta.altura} cm | IMC: {plan.consulta.imc:.2f}")
+    
+    # Contenido del plan
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(inch, height - 4*inch, "Plan Nutricional:")
+    
+    contenido_html = plan.contenido.replace('\n', '<br/>')
+
+    plan_paragraph = Paragraph(contenido_html, style_normal)
+
+    plan_paragraph.wrapOn(p, width - 2*inch, height - 5*inch)
+    plan_paragraph.drawOn(p, inch, height - 4.5*inch - plan_paragraph.height)
+    
+    # Pie de página
+    p.line(inch, 1.1*inch, width - inch, 1.1*inch)
+    p.setFont("Helvetica-Oblique", 10)
+    p.drawCentredString(width/2, inch, "Pineda IntegralMedic - Plan Nutricional Personalizado")
+    
+    # Cerrar el PDF
+    p.showPage()
+    p.save()
+    
+    # Preparar el correo electrónico
+    buffer.seek(0)
+    email = EmailMessage(
+        subject=f'Plan Nutricional - Pineda IntegralMedic',
+        body=f'Estimado/a {paciente.nombre},\n\nAdjunto encontrará su plan nutricional personalizado.\n\nSaludos cordiales,\nPineda IntegralMedic',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[paciente.email],
+    )
+    email.attach(f'Plan_Nutricional_{paciente.apellidos}.pdf', buffer.getvalue(), 'application/pdf')
+    
+    try:
+        email.send()
+        messages.success(request, f'Plan nutricional enviado correctamente a {paciente.email}.')
+    except Exception as e:
+        messages.error(request, f'Error al enviar el correo: {str(e)}')
+    
+    return redirect('detalle_plan', plan_id=plan.id)
+
+# Nuevas vistas para recetas
+@login_required
+def detalle_receta(request, receta_id):
+    receta = get_object_or_404(Receta, id=receta_id)
+    return render(request, 'consultas/receta.html', {
+        'receta': receta,
+    })
+
+@login_required
+def nueva_receta(request, consulta_id):
+    consulta = get_object_or_404(Consulta, id=consulta_id)
+    
+    # Verificar si ya existe una receta para esta consulta
+    if hasattr(consulta, 'receta'):
+        messages.warning(request, 'Esta consulta ya tiene una receta médica.')
+        return redirect('detalle_receta', receta_id=consulta.receta.id)
+    
+    if request.method == 'POST':
+        form = RecetaForm(request.POST)
+        if form.is_valid():
+            receta = form.save(commit=False)
+            receta.consulta = consulta
+            receta.save()
+            messages.success(request, f'Receta para {consulta.paciente.nombre} {consulta.paciente.apellidos} creada correctamente.')
+            return redirect('detalle_receta', receta_id=receta.id)
+    else:
+        form = RecetaForm()
+    
+    return render(request, 'consultas/form_receta.html', {
+        'form': form,
+        'consulta': consulta,
+    })
+
+@login_required
+def editar_receta(request, receta_id):
+    receta = get_object_or_404(Receta, id=receta_id)
+    
+    if request.method == 'POST':
+        form = RecetaForm(request.POST, instance=receta)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Receta para {receta.consulta.paciente.nombre} {receta.consulta.paciente.apellidos} actualizada correctamente.')
+            return redirect('detalle_receta', receta_id=receta.id)
+    else:
+        form = RecetaForm(instance=receta)
+    
+    return render(request, 'consultas/form_receta.html', {
+        'form': form,
+        'receta': receta,
+    })
+
+@login_required
+def generar_pdf_receta(request, receta_id):
+    receta = get_object_or_404(Receta, id=receta_id)
+    
+    buffer = io.BytesIO()
+
+    # NUEVO: Definir tamaño de media página (Half US Letter)
+    receta_size = (8.5 * inch, 5.5 * inch)
+    p = canvas.Canvas(buffer, pagesize=receta_size)
+    width, height = receta_size
+
+    # --- ENCABEZADO ---
+    # Cargar la ruta del logo
+    logo_path = None
+    try:
+        logo_filename = "Logo2.png" 
+        logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
+        if os.path.exists(logo_path_full):
+            logo_path = logo_path_full
+    except (IndexError, AttributeError):
+        pass
+
+    # Columna Izquierda: Logo
+    if logo_path:
+        p.drawImage(logo_path, x=0.5*inch, y=5*inch, width=2*inch, preserveAspectRatio=True)
+    # Estilos para los párrafos del encabezado
+    styles = getSampleStyleSheet()
+    style_center = ParagraphStyle(name='Center', alignment=TA_CENTER, parent=styles['Normal'], fontSize=9, leading=11)
+    style_left_small = ParagraphStyle(name='LeftSmall', alignment=TA_LEFT, parent=styles['Normal'], fontSize=9, leading=11)
+
+    # Columna Central: Información del Doctor
+    texto_centro_html = """
+        <b>DR. VICTOR M. PINEDA RAMIREZ</b><br/>
+        Medico Cirujano - Nutrición - Medicina Estética<br/>
+        Ced. PROFESIONAL 2026134<br/>
+        UNAM
+    """
+    para_centro = Paragraph(texto_centro_html, style_center)
+    # Definimos el área para el párrafo central y lo dibujamos
+    para_centro.wrapOn(p, 3 * inch, 1.5 * inch)
+    para_centro.drawOn(p, 2.75 * inch, height - 1.2 * inch)
+
+
+    # Columna Derecha: Contacto
+    texto_derecha_html = """
+        <b>TEL .</b> 646 176 5422<br/>
+        <b>CEL.</b> 646 171 6178<br/>
+        vpineda136@hotmail.com<br/>
+        pinedamedic@gmail.com
+    """
+    para_derecha = Paragraph(texto_derecha_html, style_left_small)
+    # Definimos el área para el párrafo derecho y lo dibujamos
+    para_derecha.wrapOn(p, 2 * inch, 1.5 * inch)
+    para_derecha.drawOn(p, 6 * inch, height - 1.2 * inch)
+
+
+    # Línea separadora después del encabezado
+    p.line(0.5 * inch, height - 1.5 * inch, width - 0.5 * inch, height - 1.5 * inch)
+
+    # --- CUERPO ---
+    y_position = height - 1.9 * inch # Posición inicial debajo de la línea
+
+    # Información del paciente
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(0.5 * inch, y_position, "Paciente:")
+    p.setFont("Helvetica", 11)
+    p.drawString(1.5 * inch, y_position, f"{receta.consulta.paciente.nombre} {receta.consulta.paciente.apellidos}")
+    y_position -= 0.3 * inch
+    
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(0.5 * inch, y_position, "Fecha:")
+    p.setFont("Helvetica", 11)
+    p.drawString(1.5 * inch, y_position, receta.fecha_creacion.strftime("%d/%m/%Y"))
+    y_position -= 0.6 * inch
+     
+    # Contenido de la receta (sin título)
+    styles = getSampleStyleSheet()
+    style_normal = styles['Normal']
+    style_normal.leading = 14
+    style_normal.fontSize = 11
+
+    contenido_html = receta.medicamentos.replace('\n', '<br/>')
+    medicamentos_paragraph = Paragraph(contenido_html, style_normal)
+
+    # Lógica para evitar que el texto invada el pie de página
+    footer_margin = 1.0 * inch
+    available_height = y_position - footer_margin
+    w_para, h_para = medicamentos_paragraph.wrapOn(p, width - inch, available_height)
+    medicamentos_paragraph.drawOn(p, 0.5 * inch, y_position - h_para)
+     
+    # --- PIE DE PÁGINA ---
+    # Línea separadora antes del pie de página
+    p.line(0.5 * inch, 0.75 * inch, width - 0.5 * inch, 0.75 * inch)
+    
+    # Texto del pie de página
+    p.setFont("Helvetica-Oblique", 9)
+    p.drawCentredString(width / 2, 0.5 * inch, "Calle Mina No. 30-1, Fracc Bahía C.P 22880 Ensenada, B.C., México")
+     
+    # --- FINALIZAR ---
+    p.showPage()
+    p.save()
+    
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Receta_{receta.consulta.paciente.apellidos}.pdf"'
+    
+    return response
