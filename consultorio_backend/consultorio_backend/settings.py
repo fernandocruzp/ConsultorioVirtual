@@ -32,7 +32,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["https://pinedaintegralmedic.onrender.com/"]
+ALLOWED_HOSTS = ["pinedaintegralmedic.onrender.com/"]
 
 
 # Application definition
