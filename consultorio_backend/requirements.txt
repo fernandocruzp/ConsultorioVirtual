@@ -6,6 +6,7 @@ charset-normalizer==3.4.2
 cssselect2==0.8.0
 Django==5.2
 django-crispy-forms==2.4
+dj-database-url==3.0.0
 fonttools==4.57.0
 gunicorn==23.0.0
 packaging==25.0
