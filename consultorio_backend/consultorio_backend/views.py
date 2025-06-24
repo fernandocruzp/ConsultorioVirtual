@@ -9,8 +9,10 @@ from pacientes.models import Paciente
 from consultas.models import Consulta
 from agenda.models import Cita
 from .forms import UserEmailChangeForm
+from portal.decorators import group_required
 
 @login_required
+@group_required('Medicos')
 def dashboard(request):
     # Obtener estadísticas
     total_pacientes = Paciente.objects.count()
@@ -49,6 +51,7 @@ def dashboard(request):
     return render(request, 'base/dashboard.html', context)
 
 @login_required
+@group_required('Medicos')
 def cambiar_password(request):
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
@@ -67,6 +70,7 @@ def cambiar_password(request):
     })
 
 @login_required
+@group_required('Medicos')
 def cambiar_correo(request):
     usuario= request.user
     if request.method == 'POST':

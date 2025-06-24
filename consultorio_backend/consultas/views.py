@@ -20,8 +20,10 @@ from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT 
 import json
 import os
+from portal.decorators import group_required
 
 @login_required
+@group_required('Medicos')
 def lista_consultas(request):
     query = request.GET.get('q', '')
     if query:
@@ -43,6 +45,7 @@ def lista_consultas(request):
     })
 
 @login_required
+@group_required('Medicos')
 def detalle_consulta(request, consulta_id):
     consulta = get_object_or_404(Consulta, id=consulta_id)
     
@@ -57,6 +60,7 @@ def detalle_consulta(request, consulta_id):
     })
 
 @login_required
+@group_required('Medicos')
 def historial_completo(request, consulta_id):
     consulta = get_object_or_404(Consulta, id=consulta_id)
     
@@ -88,6 +92,7 @@ def historial_completo(request, consulta_id):
     })
 
 @login_required
+@group_required('Medicos')
 def nueva_consulta(request, paciente_id=None):
     print(paciente_id)
     paciente = None
@@ -124,6 +129,7 @@ def nueva_consulta(request, paciente_id=None):
     })
 
 @login_required
+@group_required('Medicos')
 def detalle_plan(request, plan_id):
     plan = get_object_or_404(PlanNutricional, id=plan_id)
     return render(request, 'consultas/plan_nutricional.html', {
@@ -131,6 +137,7 @@ def detalle_plan(request, plan_id):
     })
 
 @login_required
+@group_required('Medicos')
 def nuevo_plan(request, consulta_id):
     consulta = get_object_or_404(Consulta, id=consulta_id)
     
@@ -156,6 +163,7 @@ def nuevo_plan(request, consulta_id):
     })
 
 @login_required
+@group_required('Medicos')
 def editar_plan(request, plan_id):
     plan = get_object_or_404(PlanNutricional, id=plan_id)
     
@@ -174,6 +182,7 @@ def editar_plan(request, plan_id):
     })
 
 @login_required
+@group_required('Medicos')
 def generar_pdf_plan(request, plan_id):
     
     plan = get_object_or_404(PlanNutricional, id=plan_id)
@@ -261,6 +270,7 @@ def generar_pdf_plan(request, plan_id):
     return response
 
 @login_required
+@group_required('Medicos')
 def generar_pdf_historial(request, consulta_id):
     consulta = get_object_or_404(Consulta, id=consulta_id)
     
@@ -368,6 +378,7 @@ def generar_pdf_historial(request, consulta_id):
     return response
 
 @login_required
+@group_required('Medicos')
 def enviar_historial_email(request, consulta_id):
     consulta = get_object_or_404(Consulta, id=consulta_id)
     
@@ -486,6 +497,7 @@ def enviar_historial_email(request, consulta_id):
     return redirect('historial_completo',consulta.id)
 
 @login_required
+@group_required('Medicos')
 def enviar_plan_email(request, plan_id):
     user = request.user
     plan = get_object_or_404(PlanNutricional, id=plan_id)
@@ -587,6 +599,7 @@ def enviar_plan_email(request, plan_id):
 
 # Nuevas vistas para recetas
 @login_required
+@group_required('Medicos')
 def detalle_receta(request, receta_id):
     receta = get_object_or_404(Receta, id=receta_id)
     return render(request, 'consultas/receta.html', {
@@ -594,6 +607,7 @@ def detalle_receta(request, receta_id):
     })
 
 @login_required
+@group_required('Medicos')
 def nueva_receta(request, consulta_id):
     consulta = get_object_or_404(Consulta, id=consulta_id)
     
@@ -619,6 +633,7 @@ def nueva_receta(request, consulta_id):
     })
 
 @login_required
+@group_required('Medicos')
 def editar_receta(request, receta_id):
     receta = get_object_or_404(Receta, id=receta_id)
     
@@ -637,6 +652,7 @@ def editar_receta(request, receta_id):
     })
 
 @login_required
+@group_required('Medicos')
 def generar_pdf_receta(request, receta_id):
     receta = get_object_or_404(Receta, id=receta_id)
     

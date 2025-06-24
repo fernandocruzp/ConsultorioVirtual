@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 import uuid
 
 class Paciente(models.Model):
@@ -63,6 +64,13 @@ class Paciente(models.Model):
     editable=False, 
     unique=True,
     verbose_name="Llave Única de Acceso"
+    )
+    usuario = models.OneToOneField(
+        User, 
+        on_delete=models.SET_NULL, # Si se borra el usuario, el paciente no se borra
+        null=True, 
+        blank=True,
+        related_name='paciente_profile'
     )
    
     def __str__(self):

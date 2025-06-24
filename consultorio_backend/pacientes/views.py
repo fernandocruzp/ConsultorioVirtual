@@ -8,8 +8,10 @@ from .forms import PacienteForm
 from consultas.models import Consulta
 from agenda.models import Cita
 import json
+from portal.decorators import group_required
 
 @login_required
+@group_required('Medicos')
 def lista_pacientes(request):
     query = request.GET.get('q', '')
     if query:
@@ -33,6 +35,7 @@ def lista_pacientes(request):
     })
 
 @login_required
+@group_required('Medicos')
 def detalle_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
     consultas = Consulta.objects.filter(paciente=paciente).order_by('-fecha')
@@ -49,6 +52,7 @@ def detalle_paciente(request, paciente_id):
     })
 
 @login_required
+@group_required('Medicos')
 def nuevo_paciente(request):
     if request.method == 'POST':
         form = PacienteForm(request.POST)
@@ -64,6 +68,7 @@ def nuevo_paciente(request):
     })
 
 @login_required
+@group_required('Medicos')
 def editar_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
     
@@ -80,7 +85,9 @@ def editar_paciente(request, paciente_id):
         'form': form,
         'paciente': paciente,
     })
+
 @login_required
+@group_required('Medicos')
 def historial_completo(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
     

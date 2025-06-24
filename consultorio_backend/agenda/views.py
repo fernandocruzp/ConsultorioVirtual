@@ -9,8 +9,10 @@ from .forms import CitaForm
 from pacientes.models import Paciente
 from consultas.models import Consulta
 import json
+from portal.decorators import group_required
 
 @login_required
+@group_required('Medicos')
 def lista_citas(request):
     query = request.GET.get('q', '')
     
@@ -59,6 +61,7 @@ def lista_citas(request):
     })
 
 @login_required
+@group_required('Medicos')
 def detalle_cita(request, cita_id):
     cita = get_object_or_404(Cita, id=cita_id)
     
@@ -75,6 +78,7 @@ def detalle_cita(request, cita_id):
     })
 
 @login_required
+@group_required('Medicos')
 def nueva_cita(request, paciente_id=None):
     paciente = None
     if paciente_id:
@@ -106,6 +110,7 @@ def nueva_cita(request, paciente_id=None):
     })
 
 @login_required
+@group_required('Medicos')
 def editar_cita(request, cita_id):
     cita = get_object_or_404(Cita, id=cita_id)
     
@@ -131,6 +136,7 @@ def editar_cita(request, cita_id):
     })
 
 @login_required
+@group_required('Medicos')
 def completar_cita(request, cita_id):
     cita = get_object_or_404(Cita, id=cita_id)
     
@@ -146,6 +152,7 @@ def completar_cita(request, cita_id):
     return redirect('detalle_cita', cita_id=cita.id)
 
 @login_required
+@group_required('Medicos')
 def cancelar_cita(request, cita_id):
     cita = get_object_or_404(Cita, id=cita_id)
     

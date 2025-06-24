@@ -106,6 +106,10 @@ DATABASES = {
     #}
 #}
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend', # Mantiene el login normal para el admin
+    'portal.backends.LlaveUnicaBackend',         # Añade nuestro nuevo método de login
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
