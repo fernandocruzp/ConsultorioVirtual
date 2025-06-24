@@ -38,7 +38,7 @@ urlpatterns = [
     path("pacientes/", include("pacientes.urls")),
     path("consultas/", include("consultas.urls")),
     path("agenda/", include("agenda.urls")),
-#    path("portal/", include("portal.urls")),
+    path("portal/", include("portal.urls")),
     
     # Redirección para compatibilidad con Electron
     path("favicon.ico", RedirectView.as_view(url="/static/img/favicon.ico")),
