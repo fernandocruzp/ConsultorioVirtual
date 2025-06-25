@@ -88,7 +88,31 @@
 
             <div class="tab-content pt-3" id="myTabContent">
                 
-                <div class="tab-pane fade show active" id="desayuno-pane" role="tabpanel" aria-labelledby="desayuno-tab" tabindex="0">
+              <div class="tab-pane fade show active" id="desayuno-pane" role="tabpanel" aria-labelledby="desayuno-tab" tabindex="0">
+		<h6 class="mt-3">Opciones Rápidas para Desayuno</h6>
+		<p class="text-muted small">Selecciona una o más opciones para añadirlas al plan.</p>
+    
+		<div class="mb-3">
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="Nutravit, 2 cucharadas con 300ml de leche de almendra o coco" id="opcionDesayuno1" onclick="actualizarTextareaDesayuno(this)">
+		    <label class="form-check-label" for="opcionDesayuno1">
+                      Nutravit, 2 cucharadas con 300ml de leche de almendra o coco
+		    </label>
+		  </div>
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="2 huevos" id="opcionDesayuno2" onclick="actualizarTextareaDesayuno(this)">
+		    <label class="form-check-label" for="opcionDesayuno2">
+                      2 huevos
+		    </label>
+		  </div>
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="Carne blanca con verduras" id="opcionDesayuno3" onclick="actualizarTextareaDesayuno(this)">
+		    <label class="form-check-label" for="opcionDesayuno3">
+                      Carne blanca con verduras
+		    </label>
+		  </div>
+		</div>
+		<hr>
                     <div class="form-group">
                         {{ form.contenido_desayuno.label_tag }}
                         {{ form.contenido_desayuno }}
@@ -97,7 +121,37 @@
                     </div>
                 </div>
 
-                <div class="tab-pane fade" id="colacion-pane" role="tabpanel" aria-labelledby="colacion-tab" tabindex="0">
+              <div class="tab-pane fade" id="colacion-pane" role="tabpanel" aria-labelledby="colacion-tab" tabindex="0">
+		<h6 class="mt-3">Opciones Rápidas para Colación</h6>
+		<p class="text-muted small">Selecciona una o más opciones para añadirlas al plan.</p>
+    
+		<div class="mb-3">
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="1/2 fruta" id="opcionColacion1" onclick="actualizarTextareaColacion(this)">
+		    <label class="form-check-label" for="opcionColacion1">
+                      1/2 fruta
+		    </label>
+		  </div>
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="12 nueces o almendras" id="opcionColacion2" onclick="actualizarTextareaColacion(this)">
+		    <label class="form-check-label" for="opcionColacion2">
+                      12 nueces o almendras
+		    </label>
+		  </div>
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="Carne blanca con verduras" id="opcionColacion3" onclick="actualizarTextareaColacion(this)">
+		    <label class="form-check-label" for="opcionColacion3">
+                      Carne blanca con verduras
+		    </label>
+		  </div>
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="Gelatina sin azucar" id="opcionColacion4" onclick="actualizarTextareaColacion(this)">
+		    <label class="form-check-label" for="opcionColacion4">
+                      Gelatina sin azucar
+		    </label>
+		  </div>
+		</div>
+		<hr>
                     <div class="form-group">
                         {{ form.contenido_colacion.label_tag }}
                         {{ form.contenido_colacion }}
@@ -106,7 +160,32 @@
                     </div>
                 </div>
 
-                <div class="tab-pane fade" id="comida-pane" role="tabpanel" aria-labelledby="comida-tab" tabindex="0">
+              <div class="tab-pane fade" id="comida-pane" role="tabpanel" aria-labelledby="comida-tab" tabindex="0">
+		<h6 class="mt-3">Opciones Rápidas para Comida</h6>
+		<p class="text-muted small">Selecciona una o más opciones para añadirlas al plan.</p>
+    
+		<div class="mb-3">
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="Carne  blanca  (no frito o empanizado) verduras libre" id="opcionComida1" onclick="actualizarTextareaComida(this)">
+		    <label class="form-check-label" for="opcionComida1">
+                      Carne  blanca  (no frito o empanizado) verduras libre
+		    </label>
+		  </div>
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="Cocinar con aceite de coco,aguacate o uva 
+" id="opcionComida2" onclick="actualizarTextareaComida(this)">
+		    <label class="form-check-label" for="opcionComida2">
+                      Cocinar con aceite de coco,aguacate o uva 
+		    </label>
+		  </div>
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="1/2 pza de  Aguacate  y   2 cucharadas de aceite de olivo extra virgen" id="opcionComida3" onclick="actualizarTextareaComida(this)">
+		    <label class="form-check-label" for="opcionComida3">
+                      1/2 pza de  Aguacate  y   2 cucharadas de aceite de olivo extra virgen
+		    </label>
+		  </div>
+		</div>
+		<hr>
                     <div class="form-group">
                         {{ form.contenido_comida.label_tag }}
                         {{ form.contenido_comida }}
@@ -115,8 +194,20 @@
                     </div>
                 </div>
 
-                <div class="tab-pane fade" id="cena-pane" role="tabpanel" aria-labelledby="cena-tab" tabindex="0">
-                    <div class="form-group">
+              <div class="tab-pane fade" id="cena-pane" role="tabpanel" aria-labelledby="cena-tab" tabindex="0">
+		<h6 class="mt-3">Opciones Rápidas para Cena</h6>
+		<p class="text-muted small">Selecciona una o más opciones para añadirlas al plan.</p>
+    
+		<div class="mb-3">
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="1 porcion de la comida" id="opcionCena1" onclick="actualizarTextareaCena(this)">
+		    <label class="form-check-label" for="opcionCena1">
+                      1 porcion de la comida
+		    </label>
+		  </div>
+		</div>
+		<hr>
+		  <div class="form-group">
                         {{ form.contenido_cena.label_tag }}
                         {{ form.contenido_cena }}
                         {% if form.contenido_cena.errors %}<div class="invalid-feedback d-block">{{ form.contenido_cena.errors }}</div>{% endif %}
@@ -156,5 +247,63 @@
             }
         });
     });
+
+  function actualizarTextareaDesayuno(checkbox) {
+        const textarea = document.getElementById('id_contenido_desayuno');
+        const textoOpcion = checkbox.value;
+
+        let lineas = textarea.value.split('\n').filter(linea => linea.trim() !== '');
+
+        if (checkbox.checked) {
+            lineas.push(textoOpcion);
+        } else {
+            lineas = lineas.filter(linea => linea.trim() !== textoOpcion.trim());
+        }
+
+        textarea.value = lineas.join('\n');
+  }
+
+  function actualizarTextareaColacion(checkbox) {
+        const textarea = document.getElementById('id_contenido_colacion');
+        const textoOpcion = checkbox.value;
+
+        let lineas = textarea.value.split('\n').filter(linea => linea.trim() !== '');
+
+        if (checkbox.checked) {
+            lineas.push(textoOpcion);
+        } else {
+            lineas = lineas.filter(linea => linea.trim() !== textoOpcion.trim());
+        }
+
+        textarea.value = lineas.join('\n');
+  }
+  function actualizarTextareaComida(checkbox) {
+        const textarea = document.getElementById('id_contenido_comida');
+        const textoOpcion = checkbox.value;
+
+        let lineas = textarea.value.split('\n').filter(linea => linea.trim() !== '');
+
+        if (checkbox.checked) {
+            lineas.push(textoOpcion);
+        } else {
+            lineas = lineas.filter(linea => linea.trim() !== textoOpcion.trim());
+        }
+
+        textarea.value = lineas.join('\n');
+  }
+  function actualizarTextareaCena(checkbox) {
+        const textarea = document.getElementById('id_contenido_cena');
+        const textoOpcion = checkbox.value;
+
+        let lineas = textarea.value.split('\n').filter(linea => linea.trim() !== '');
+
+        if (checkbox.checked) {
+            lineas.push(textoOpcion);
+        } else {
+            lineas = lineas.filter(linea => linea.trim() !== textoOpcion.trim());
+        }
+
+        textarea.value = lineas.join('\n');
+    }
 </script>
 {% endblock %}

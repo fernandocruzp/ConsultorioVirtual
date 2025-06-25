@@ -179,6 +179,7 @@ def editar_plan(request, plan_id):
     return render(request, 'consultas/form_plan.html', {
         'form': form,
         'plan': plan,
+        'consulta': plan.consulta,
     })
 
 def generar_pdf(plan_id):
@@ -336,6 +337,25 @@ def generar_pdf(plan_id):
             contenido_html = contenido.replace('\n', '<br/>')
             story.append(Paragraph(contenido_html, style_contenido_comida))
             story.append(Spacer(1, 0.2*inch))
+
+    story.append(Spacer(1, 0.5*inch)) 
+
+    style_aclaraciones = styles['BodyText']
+    style_aclaraciones.fontSize = 10
+    style_aclaraciones.leading = 12
+
+    texto_aclaraciones1 = """
+    Debe de comer cada 3-4 hrs. Debe de tomar 2-3 litros de agua. 
+    Solo consuma frutos del monje. Consumir poca cantidad de sal o sal vegetal o rosa.
+    """
+    story.append(Paragraph(texto_aclaraciones1, style_aclaraciones))
+    story.append(Spacer(1, 0.1*inch))
+
+    texto_equivalentes_final = "<b>Equivalentes de cereales:</b> 0-2, <b>lácteos:</b> 0, <b>fruta:</b> 1 pza o 1 taza."
+    story.append(Paragraph(texto_equivalentes_final, style_aclaraciones))
+    story.append(Spacer(1, 0.2*inch))
+    texto_advertencia = '<font color="red"><b>NO LÁCTEOS, NO CARNES ROJAS, NO FRIJOLES</b></font>'
+    story.append(Paragraph(texto_advertencia, styles['h2']))
 
     def pie_de_pagina(canvas, doc):
         canvas.saveState()
