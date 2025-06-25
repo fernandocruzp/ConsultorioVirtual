@@ -205,7 +205,7 @@ def generar_pdf_plan(request, plan_id):
     logo_path = None
     try:
         # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
-        logo_filename = 'Logo2.png' 
+        logo_filename = 'Logo3.png' 
         logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
         if os.path.exists(logo_path_full):
             logo_path = logo_path_full
@@ -216,7 +216,7 @@ def generar_pdf_plan(request, plan_id):
     y_position = height - inch 
 
     if logo_path:
-        p.drawImage(logo_path, x=2.6*inch, y=height - 2.50*inch, width=3.5*inch, preserveAspectRatio=True, mask='auto')
+        p.drawImage(logo_path, x=2.6*inch, y=height - 1.50*inch, width=2.8*inch, preserveAspectRatio=True, mask='auto')
 
     p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
     
@@ -297,7 +297,7 @@ def generar_pdf_historial(request, consulta_id):
     logo_path = None
     try:
         # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
-        logo_filename = 'Logo2.png' 
+        logo_filename = 'Logo3.png' 
         logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
         if os.path.exists(logo_path_full):
             logo_path = logo_path_full
@@ -308,7 +308,7 @@ def generar_pdf_historial(request, consulta_id):
     y_position = height - inch 
 
     if logo_path:
-        p.drawImage(logo_path, x=2.6*inch, y=height - 2.50*inch, width=3.5*inch, preserveAspectRatio=True, mask='auto')
+        p.drawImage(logo_path, x=2.6*inch, y=height - 1.50*inch, width=2.8*inch, preserveAspectRatio=True, mask='auto')
 
     p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
     
@@ -321,6 +321,14 @@ def generar_pdf_historial(request, consulta_id):
     p.drawString(inch, height - 2.5*inch, "Paciente:")
     p.setFont("Helvetica", 12)
     p.drawString(2*inch, height - 2.5*inch, f"{consulta.paciente.nombre} {consulta.paciente.apellidos}")
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 2.7*inch, "Para más información usa el siguiente enlace:")
+    p.setFont("Helvetica", 12)
+    p.drawString(inch, height - 2.9*inch, "https://pinedaintegralmedic.onrender.com/portal/")
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 3.1*inch, "Llave de acceso:")
+    p.drawString(2.5*inch, height - 3.1*inch, f"{consulta.paciente.llave_unica}")
+    
     
     # Contenido del historial
     data = [[
@@ -405,7 +413,7 @@ def enviar_historial_email(request, consulta_id):
     logo_path = None
     try:
         # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
-        logo_filename = 'Logo2.png' 
+        logo_filename = 'Logo3.png' 
         logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
         if os.path.exists(logo_path_full):
             logo_path = logo_path_full
@@ -416,8 +424,8 @@ def enviar_historial_email(request, consulta_id):
     y_position = height - inch 
 
     if logo_path:
-        p.drawImage(logo_path, x=2.6*inch, y=height - 2.50*inch, width=3.5*inch, preserveAspectRatio=True, mask='auto')
-
+        p.drawImage(logo_path, x=2.6*inch, y=height - 1.50*inch, width=2.8*inch, preserveAspectRatio=True, mask='auto')
+        
     p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
     
     # Título
@@ -429,6 +437,13 @@ def enviar_historial_email(request, consulta_id):
     p.drawString(inch, height - 2.5*inch, "Paciente:")
     p.setFont("Helvetica", 12)
     p.drawString(2*inch, height - 2.5*inch, f"{consulta.paciente.nombre} {consulta.paciente.apellidos}")
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 2.7*inch, "Para más información usa el siguiente enlace:")
+    p.setFont("Helvetica", 12)
+    p.drawString(inch, height - 2.9*inch, "https://pinedaintegralmedic.onrender.com/portal/")
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 3.1*inch, "Llave de acceso:")
+    p.drawString(2.5*inch, height - 3.1*inch, f"{consulta.paciente.llave_unica}")
     
     # Contenido del historial
     data = [[
@@ -522,7 +537,7 @@ def enviar_plan_email(request, plan_id):
     logo_path = None
     try:
         # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
-        logo_filename = 'Logo2.png' 
+        logo_filename = 'Logo3.png' 
         logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
         if os.path.exists(logo_path_full):
             logo_path = logo_path_full
@@ -533,13 +548,13 @@ def enviar_plan_email(request, plan_id):
     y_position = height - inch 
 
     if logo_path:
-        p.drawImage(logo_path, x=2.6*inch, y=height - 2.50*inch, width=3.5*inch, preserveAspectRatio=True, mask='auto')
+        p.drawImage(logo_path, x=2.6*inch, y=height - 1.50*inch, width=2.8*inch, preserveAspectRatio=True, mask='auto')
 
     p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
     
     # Título
     p.setFont("Helvetica-Bold", 18)
-    p.drawCentredString(width/2, height - inch, "Plan Nutricional")
+    p.drawCentredString(width/2, height - 1.4*inch, "Plan Nutricional")
     
     # Información del paciente
     p.setFont("Helvetica-Bold", 12)
@@ -667,7 +682,7 @@ def generar_pdf_receta(request, receta_id):
     # Cargar la ruta del logo
     logo_path = None
     try:
-        logo_filename = "Logo2.png" 
+        logo_filename = "Logo3.png" 
         logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
         if os.path.exists(logo_path_full):
             logo_path = logo_path_full
@@ -676,7 +691,7 @@ def generar_pdf_receta(request, receta_id):
 
     # Columna Izquierda: Logo
     if logo_path:
-        p.drawImage(logo_path, x=0.5*inch, y=5*inch, width=2*inch, preserveAspectRatio=True)
+        p.drawImage(logo_path, x=0.5*inch, y=4*inch, width=2*inch, preserveAspectRatio=True)
     # Estilos para los párrafos del encabezado
     styles = getSampleStyleSheet()
     style_center = ParagraphStyle(name='Center', alignment=TA_CENTER, parent=styles['Normal'], fontSize=9, leading=11)
