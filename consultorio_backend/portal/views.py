@@ -43,7 +43,7 @@ def inicio_portal(request):
 @group_required('Pacientes')
 def portal_dashboard(request):
     paciente = request.user.paciente_profile
-    consultas = Consulta.objects.filter(paciente=paciente).order_by('-fecha')
+    consultas = Consulta.objects.filter(paciente=paciente).select_related('plan').order_by('-fecha')
     citas = Cita.objects.filter(paciente=paciente, estado='programada').order_by('fecha_hora')
     
     # Obtener la última consulta para mostrar datos recientes

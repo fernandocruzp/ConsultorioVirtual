@@ -34,10 +34,10 @@ def dashboard(request):
     proximas_citas = Cita.objects.filter(
         estado='programada',
         fecha_hora__gte=hoy
-    ).order_by('fecha_hora')[:5]
+    ).select_related('paciente').order_by('fecha_hora')[:5]
     
     # Últimas consultas
-    ultimas_consultas = Consulta.objects.all().order_by('-fecha')[:5]
+    ultimas_consultas = Consulta.objects.all().select_related('paciente').order_by('-fecha')[:5]
     
     context = {
         'total_pacientes': total_pacientes,
