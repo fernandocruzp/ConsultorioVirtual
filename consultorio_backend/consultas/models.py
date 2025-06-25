@@ -32,7 +32,10 @@ class Consulta(models.Model):
 
 class PlanNutricional(models.Model):
     consulta = models.OneToOneField('consultas.Consulta', on_delete=models.CASCADE, related_name='plan')
-    contenido = models.TextField()
+    contenido_desayuno = models.TextField(default="")
+    contenido_colacion = models.TextField(default="")
+    contenido_comida = models.TextField(default="")
+    contenido_cena = models.TextField(default="")
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

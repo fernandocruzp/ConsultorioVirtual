@@ -30,9 +30,12 @@ class ConsultaForm(forms.ModelForm):
 class PlanNutricionalForm(forms.ModelForm):
     class Meta:
         model = PlanNutricional
-        fields = ['contenido']
+        fields = ['contenido_desayuno','contenido_colacion', 'contenido_comida','contenido_cena']
         widgets = {
-            'contenido': forms.Textarea(attrs={'rows': 15}),
+            'contenido_desayuno': forms.Textarea(attrs={'rows': 15}),
+            'contenido_colacion': forms.Textarea(attrs={'rows': 15}),
+            'contenido_comida': forms.Textarea(attrs={'rows': 15}),
+            'contenido_cena': forms.Textarea(attrs={'rows': 15}),
         }
 
 class RecetaForm(forms.ModelForm):

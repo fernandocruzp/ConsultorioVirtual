@@ -70,24 +70,70 @@
     <div class="card-body">
         <form method="post" novalidate>
             {% csrf_token %}
-            
-            <div class="form-group mb-3">
-                <label for="{{ form.contenido.id_for_label }}">Contenido del Plan Nutricional:</label>
-                {{ form.contenido }}
-                {% if form.contenido.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.contenido.errors }}
+
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="desayuno-tab" data-bs-toggle="tab" data-bs-target="#desayuno-pane" type="button" role="tab" aria-controls="desayuno-pane" aria-selected="true">Desayuno</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="colacion-tab" data-bs-toggle="tab" data-bs-target="#colacion-pane" type="button" role="tab" aria-controls="colacion-pane" aria-selected="false">Colación</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="comida-tab" data-bs-toggle="tab" data-bs-target="#comida-pane" type="button" role="tab" aria-controls="comida-pane" aria-selected="false">Comida</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="cena-tab" data-bs-toggle="tab" data-bs-target="#cena-pane" type="button" role="tab" aria-controls="cena-pane" aria-selected="false">Cena</button>
+                </li>
+            </ul>
+
+            <div class="tab-content pt-3" id="myTabContent">
+                
+                <div class="tab-pane fade show active" id="desayuno-pane" role="tabpanel" aria-labelledby="desayuno-tab" tabindex="0">
+                    <div class="form-group">
+                        {{ form.contenido_desayuno.label_tag }}
+                        {{ form.contenido_desayuno }}
+                        {% if form.contenido_desayuno.errors %}<div class="invalid-feedback d-block">{{ form.contenido_desayuno.errors }}</div>{% endif %}
+                        <small class="form-text text-muted">Detalles y opciones para el desayuno.</small>
+                    </div>
                 </div>
-                {% endif %}
-                <small class="form-text text-muted">Incluya todos los detalles del plan nutricional: recomendaciones, dieta, suplementos, etc.</small>
+
+                <div class="tab-pane fade" id="colacion-pane" role="tabpanel" aria-labelledby="colacion-tab" tabindex="0">
+                    <div class="form-group">
+                        {{ form.contenido_colacion.label_tag }}
+                        {{ form.contenido_colacion }}
+                        {% if form.contenido_colacion.errors %}<div class="invalid-feedback d-block">{{ form.contenido_colacion.errors }}</div>{% endif %}
+                        <small class="form-text text-muted">Opciones para las colaciones de media mañana y media tarde.</small>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="comida-pane" role="tabpanel" aria-labelledby="comida-tab" tabindex="0">
+                    <div class="form-group">
+                        {{ form.contenido_comida.label_tag }}
+                        {{ form.contenido_comida }}
+                        {% if form.contenido_comida.errors %}<div class="invalid-feedback d-block">{{ form.contenido_comida.errors }}</div>{% endif %}
+                        <small class="form-text text-muted">Detalles y opciones para la comida principal.</small>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="cena-pane" role="tabpanel" aria-labelledby="cena-tab" tabindex="0">
+                    <div class="form-group">
+                        {{ form.contenido_cena.label_tag }}
+                        {{ form.contenido_cena }}
+                        {% if form.contenido_cena.errors %}<div class="invalid-feedback d-block">{{ form.contenido_cena.errors }}</div>{% endif %}
+                        <small class="form-text text-muted">Detalles y opciones para la cena.</small>
+                    </div>
+                </div>
             </div>
-            
-            <div class="d-flex justify-content-between">
-                <a href="{% if plan %}/consultas/plan/{{ plan.id }}/{% else %}/consultas/{{ consulta.id }}/{% endif %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Cancelar
+
+            <hr>
+
+            <div class="d-flex justify-content-between mt-4">
+                {# Simplificamos la URL de cancelar para que siempre vuelva a la consulta #}
+                <a href="{% url 'detalle_consulta' consulta.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Cancelar y Volver a la Consulta
                 </a>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Guardar
+                    <i class="fas fa-save"></i> Guardar Plan
                 </button>
             </div>
         </form>

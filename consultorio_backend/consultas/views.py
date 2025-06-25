@@ -180,6 +180,7 @@ def editar_plan(request, plan_id):
         'form': form,
         'plan': plan,
     })
+
 def generar_pdf(plan_id):
     plan = get_object_or_404(PlanNutricional, id=plan_id)
     paciente = plan.consulta.paciente
@@ -195,7 +196,6 @@ def generar_pdf(plan_id):
     story = []
     styles = getSampleStyleSheet()
 
-    # --- Lógica para encontrar el logo (la misma que ya tienes) ---
     logo_path = None
     try:
         logo_filename = 'Logo3.png'
@@ -318,9 +318,24 @@ def generar_pdf(plan_id):
 
     story.append(Paragraph("<b><u>Plan Nutricional:</u></b>", styles['Normal']))
     story.append(Spacer(1, 0.2*inch))
+    secciones_plan = [
+    ('Desayuno', plan.contenido_desayuno),
+    ('Colación', plan.contenido_colacion),
+    ('Comida', plan.contenido_comida),
+    ('Colación', plan.contenido_colacion), 
+    ('Cena', plan.contenido_cena)
+    ]
+
+    # Definimos estilos para los títulos y el contenido de las comidas
+    style_titulo_comida = styles['h3']
+    style_contenido_comida = styles['BodyText']
     
-    contenido_html = plan.contenido.replace('\n', '<br/>')
-    story.append(Paragraph(contenido_html, styles['BodyText'])) # Platypus manejará los saltos de página si es muy largo
+    for titulo, contenido in secciones_plan:
+        if contenido and contenido.strip():        
+            story.append(Paragraph(titulo, style_titulo_comida))
+            contenido_html = contenido.replace('\n', '<br/>')
+            story.append(Paragraph(contenido_html, style_contenido_comida))
+            story.append(Spacer(1, 0.2*inch))
 
     def pie_de_pagina(canvas, doc):
         canvas.saveState()

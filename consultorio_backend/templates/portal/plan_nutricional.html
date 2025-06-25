@@ -48,15 +48,62 @@
 </div>
 
 <div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Plan Nutricional</h6>
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Plan Nutricional Detallado</h6>
     </div>
     <div class="card-body">
-        <div class="plan-content">
-            {{ plan.contenido|linebreaks }}
+        <ul class="nav nav-tabs" id="planTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="desayuno-tab" data-bs-toggle="tab" data-bs-target="#desayuno-pane" type="button" role="tab">Desayuno</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="colacion-tab" data-bs-toggle="tab" data-bs-target="#colacion-pane" type="button" role="tab">Colación</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="comida-tab" data-bs-toggle="tab" data-bs-target="#comida-pane" type="button" role="tab">Comida</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="cena-tab" data-bs-toggle="tab" data-bs-target="#cena-pane" type="button" role="tab">Cena</button>
+            </li>
+        </ul>
+
+        <div class="tab-content pt-3" id="planTabContent">
+            
+            <div class="tab-pane fade show active" id="desayuno-pane" role="tabpanel">
+                {% if plan.contenido_desayuno %}
+                    <p>{{ plan.contenido_desayuno|linebreaksbr }}</p>
+                {% else %}
+                    <p class="text-muted">No se especificó un plan para el desayuno.</p>
+                {% endif %}
+            </div>
+
+            <div class="tab-pane fade" id="colacion-pane" role="tabpanel">
+                {% if plan.contenido_colacion %}
+                    <p>{{ plan.contenido_colacion|linebreaksbr }}</p>
+                {% else %}
+                    <p class="text-muted">No se especificó un plan para la colación.</p>
+                {% endif %}
+            </div>
+
+            <div class="tab-pane fade" id="comida-pane" role="tabpanel">
+                {% if plan.contenido_comida %}
+                    <p>{{ plan.contenido_comida|linebreaksbr }}</p>
+                {% else %}
+                    <p class="text-muted">No se especificó un plan para la comida.</p>
+                {% endif %}
+            </div>
+
+            <div class="tab-pane fade" id="cena-pane" role="tabpanel">
+                {% if plan.contenido_cena %}
+                    <p>{{ plan.contenido_cena|linebreaksbr }}</p>
+                {% else %}
+                    <p class="text-muted">No se especificó un plan para la cena.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
+
 
 <div class="d-flex justify-content-between">
     <a href="/portal/consultas/{{ plan.consulta.id }}/" class="btn btn-secondary">
