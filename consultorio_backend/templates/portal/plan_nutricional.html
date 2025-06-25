@@ -1,0 +1,66 @@
+{% extends '../portal/base.html' %}
+
+{% block title %}Plan Nutricional - {{ plan.consulta.paciente.nombre }} - Pineda IntegralMedic{% endblock %}
+
+{% block header %}Plan Nutricional: {{ plan.consulta.paciente.nombre }} {{ plan.consulta.paciente.apellidos }}{% endblock %}
+
+{% block header_actions %}
+<div>
+    <a href="/portal/consultas/{{ plan.consulta.id }}/" class="btn btn-info">
+        <i class="fas fa-clipboard-list"></i> Ver Consulta
+    </a>
+    <a href="/portal/consultas/plan/{{ plan.id }}/pdf/" class="btn btn-danger">
+        <i class="fas fa-file-pdf"></i> Generar PDF
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Información del Plan</h6>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Paciente:</div>
+            <div class="col-md-9">{{ plan.consulta.paciente.nombre }} {{ plan.consulta.paciente.apellidos }}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Fecha de consulta:</div>
+            <div class="col-md-9">{{ plan.consulta.fecha|date:"d/m/Y" }}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Fecha de creación del plan:</div>
+            <div class="col-md-9">{{ plan.fecha_creacion|date:"d/m/Y" }}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Mediciones:</div>
+            <div class="col-md-9">
+                Peso: {{ plan.consulta.peso }} kg | 
+                Altura: {{ plan.consulta.altura }} cm | 
+                IMC: {{ plan.consulta.imc|floatformat:2 }}
+                {% if plan.consulta.circunferencia_cintura %}
+                | Cintura: {{ plan.consulta.circunferencia_cintura }} cm
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Plan Nutricional</h6>
+    </div>
+    <div class="card-body">
+        <div class="plan-content">
+            {{ plan.contenido|linebreaks }}
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between">
+    <a href="/portal/consultas/{{ plan.consulta.id }}/" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver a la Consulta
+    </a>
+</div>
+{% endblock %}

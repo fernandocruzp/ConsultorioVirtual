@@ -1,4 +1,4 @@
-{% extends './base.html' %}
+{% extends '../portal/base.html' %}
 
 {% block title %}{{ paciente.nombre }} {{ paciente.apellidos }} - Pineda IntegralMedic{% endblock %}
 
@@ -53,18 +53,6 @@
 		<hr> <div class="row mb-3 align-items-center">
                             <div class="col-md-4 font-weight-bold">
                                 <i class="fas fa-key text-warning mr-2"></i>Llave de Acceso:
-                            </div>
-                            <div class="col-md-8">
-                                <span id="llave-secreta" style="display: none; font-family: monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 4px;">{{ paciente.llave_unica }}</span>
-                                
-                                <span id="llave-oculta" style="font-family: monospace;">••••••••••••••••••••••••••••••••••••</span>
-                                
-                                <button type="button" class="btn btn-sm btn-outline-secondary ml-2" onclick="toggleLlave()" title="Mostrar / Ocultar">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button id="btn-copiar" type="button" class="btn btn-sm btn-outline-secondary" onclick="copiarLlave()" title="Copiar al portapapeles">
-                                    <i class="fas fa-copy"></i>
-                                </button>
                             </div>
                         </div>
             </div>
@@ -261,7 +249,7 @@
 <div class="card shadow mb-4">
     <div class="card-header py-3">
       <h6 class="m-0 font-weight-bold text-primary">Historial de Consultas</h6>
-      <a href="/historial/{{ paciente.id }}/" class="btn btn-sm btn-warning">
+      <a href="{% url 'portal:historial_paciente' %}" class="btn btn-sm btn-warning">
             Ver historial completo
         </a>
     </div>
@@ -288,16 +276,12 @@
                         <td>{{ consulta.imc|floatformat:2 }}</td>
                         <td>{{ consulta.circunferencia_cintura|default:"-" }}</td>
                         <td>
-                            <a href="/consultas/{{ consulta.id }}/" class="btn btn-sm btn-info">
+                            <a href="/portal/consultas/{{ consulta.id }}/" class="btn btn-sm btn-info">
                                 <i class="fas fa-eye"></i>
                             </a>
                             {% if consulta.plan %}
-                            <a href="/consultas/plan/{{ consulta.plan.id }}/" class="btn btn-sm btn-success">
+                            <a href="/portal/consultas/plan/{{ consulta.plan.id }}/" class="btn btn-sm btn-success">
                                 <i class="fas fa-file-medical"></i> Plan
-                            </a>
-                            {% else %}
-                            <a href="/consultas/plan/nuevo/{{ consulta.id }}/" class="btn btn-sm btn-outline-success">
-                                <i class="fas fa-plus"></i> Plan
                             </a>
                             {% endif %}
                         </td>
@@ -344,17 +328,9 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="/agenda/cita/{{ cita.id }}/" class="btn btn-sm btn-info">
+                            <a href="/portal/cita/{{ cita.id }}/" class="btn btn-sm btn-info">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            {% if cita.estado == 'programada' %}
-                            <a href="/agenda/cita/{{ cita.id }}/completar/" class="btn btn-sm btn-success">
-                                <i class="fas fa-check"></i>
-                            </a>
-                            <a href="/agenda/cita/{{ cita.id }}/cancelar/" class="btn btn-sm btn-danger">
-                                <i class="fas fa-times"></i>
-                            </a>
-                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -366,43 +342,4 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Función para mostrar u ocultar la llave
-    function toggleLlave() {
-        var llaveSecreta = document.getElementById('llave-secreta');
-        var llaveOculta = document.getElementById('llave-oculta');
-
-        if (llaveSecreta.style.display === 'none') {
-            llaveSecreta.style.display = 'inline';
-            llaveOculta.style.display = 'none';
-        } else {
-            llaveSecreta.style.display = 'none';
-            llaveOculta.style.display = 'inline';
-        }
-    }
-
-    // Función para copiar la llave al portapapeles
-    function copiarLlave() {
-        // Obtiene el texto de la llave
-        var llaveTexto = document.getElementById('llave-secreta').innerText;
-        
-        // Usa la API del navegador para copiar
-        navigator.clipboard.writeText(llaveTexto).then(function() {
-            // Éxito: notifica al usuario cambiando el botón temporalmente
-            var btnCopiar = document.getElementById('btn-copiar');
-            btnCopiar.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
-            
-            setTimeout(function() {
-                btnCopiar.innerHTML = '<i class="fas fa-copy"></i>';
-            }, 2000); // Vuelve al estado original después de 2 segundos
-
-        }, function(err) {
-            // Error
-            alert('Error al intentar copiar la llave: ', err);
-        });
-    }
-</script>
 {% endblock %}

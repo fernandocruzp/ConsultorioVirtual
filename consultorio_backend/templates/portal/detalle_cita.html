@@ -1,0 +1,104 @@
+{% extends '../portal/base.html' %}
+
+{% block title %}Cita: {{ cita.paciente.nombre }} - Pineda IntegralMedic{% endblock %}
+
+{% block header %}Cita: {{ cita.paciente.nombre }} {{ cita.paciente.apellidos }}{% endblock %}
+
+{% block header_actions %}
+<div>
+    <a href="/portal/" class="btn btn-info">
+        <i class="fas fa-user"></i> Regresar
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Información de la Cita</h6>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Paciente:</div>
+            <div class="col-md-9">
+                <a href="/pacientes/{{ cita.paciente.id }}/">
+                    {{ cita.paciente.nombre }} {{ cita.paciente.apellidos }}
+                </a>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Fecha y hora:</div>
+            <div class="col-md-9">{{ cita.fecha_hora|date:"d/m/Y H:i" }}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Motivo:</div>
+            <div class="col-md-9">{{ cita.motivo }}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Estado:</div>
+            <div class="col-md-9">
+                {% if cita.estado == 'programada' %}
+                <span class="badge bg-primary">Programada</span>
+                {% elif cita.estado == 'completada' %}
+                <span class="badge bg-success">Completada</span>
+                {% elif cita.estado == 'cancelada' %}
+                <span class="badge bg-danger">Cancelada</span>
+                {% endif %}
+            </div>
+        </div>
+        {% if cita.notas %}
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Notas:</div>
+            <div class="col-md-9">{{ cita.notas|linebreaks }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Otras citas del paciente -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Otras Citas del Paciente</h6>
+    </div>
+    <div class="card-body">
+        {% if otras_citas %}
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for otra_cita in otras_citas %}
+                    <tr {% if otra_cita.id == cita.id %}class="table-active"{% endif %}>
+                        <td>{{ otra_cita.fecha_hora|date:"d/m/Y H:i" }}</td>
+                        <td>{{ otra_cita.motivo }}</td>
+                        <td>
+                            {% if otra_cita.estado == 'programada' %}
+                            <span class="badge bg-primary">Programada</span>
+                            {% elif otra_cita.estado == 'completada' %}
+                            <span class="badge bg-success">Completada</span>
+                            {% elif otra_cita.estado == 'cancelada' %}
+                            <span class="badge bg-danger">Cancelada</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/portal/cita/{{ otra_cita.id }}/" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center">No hay otras citas registradas para este paciente.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
