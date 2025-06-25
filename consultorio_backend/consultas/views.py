@@ -15,7 +15,7 @@ from reportlab.lib.units import inch
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle, Image
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle, Image, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT 
 import json
@@ -180,94 +180,203 @@ def editar_plan(request, plan_id):
         'form': form,
         'plan': plan,
     })
-
-@login_required
-@group_required('Medicos')
-def generar_pdf_plan(request, plan_id):
-    
+def generar_pdf(plan_id):
     plan = get_object_or_404(PlanNutricional, id=plan_id)
+    paciente = plan.consulta.paciente
     
-    # Crear un buffer para el PDF
     buffer = io.BytesIO()
-
     
-    # Crear el objeto PDF usando ReportLab
-    p = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
+    # 1. Usamos SimpleDocTemplate en lugar de canvas. Define márgenes y tamaño de página.
+    doc = SimpleDocTemplate(buffer, pagesize=letter,
+                            rightMargin=inch, leftMargin=inch,
+                            topMargin=inch, bottomMargin=inch)
 
-    # Define estilos para los párrafos
+    # 2. "Story" es una lista que contendrá todos los elementos de nuestro PDF en orden.
+    story = []
     styles = getSampleStyleSheet()
-    style_normal = styles['Normal']
-    style_normal.leading = 14
-    style_bold = styles['h2']
 
-    # --- ENCABEZADO ---
+    # --- Lógica para encontrar el logo (la misma que ya tienes) ---
     logo_path = None
     try:
-        # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
-        logo_filename = 'Logo3.png' 
+        logo_filename = 'Logo3.png'
         logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
         if os.path.exists(logo_path_full):
             logo_path = logo_path_full
     except (IndexError, AttributeError):
         pass
 
-    # --- ENCABEZADO ---
-    y_position = height - inch 
-
+    # --- PÁGINA 1: BIENVENIDA ---
     if logo_path:
-        p.drawImage(logo_path, x=2.6*inch, y=height - 1.50*inch, width=2.8*inch, preserveAspectRatio=True, mask='auto')
+        logo = Image(logo_path, width=2*inch, height=1.5*inch)
+        logo.hAlign = 'LEFT'
+        story.append(logo)
+    
+    story.append(Spacer(1, 0.15*inch)) # Un espacio en blanco
 
-    p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
-    
-    # Título
-    p.setFont("Helvetica-Bold", 18)
-    p.drawCentredString(width/2, height - 1.5*inch, "Plan Nutricional")
-    
-    # Información del paciente
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 2*inch, "Paciente:")
-    p.setFont("Helvetica", 12)
-    p.drawString(2*inch, height - 2*inch, f"{plan.consulta.paciente.nombre} {plan.consulta.paciente.apellidos}")
-    
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 2.5*inch, "Fecha:")
-    p.setFont("Helvetica", 12)
-    p.drawString(2*inch, height - 2.5*inch, plan.fecha_creacion.strftime("%d/%m/%Y"))
-    
-    # Mediciones
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 3*inch, "Mediciones:")
-    p.setFont("Helvetica", 12)
-    p.drawString(2*inch, height - 3*inch, 
-                f"Peso: {plan.consulta.peso} kg | Altura: {plan.consulta.altura} cm | IMC: {plan.consulta.imc:.2f}")
-    
-    # Contenido del plan
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(inch, height - 4*inch, "Plan Nutricional:")
+    texto_bienvenida = """
+    Pineda Integralmedic te da la bienvenida y te felicita por el paso que has dado a
+    cambiar tu estilo de vida, nosotros te ayudaremos a que tu cambio de hábitos sea más fácil, con la
+    ayuda de las herramientas médicas que tenemos a la mano. El método que utilizamos en la Clínica está
+    comprobado, con más de 20 años de experiencia. Cada tratamiento será individualizado para cada
+    paciente dependiendo su edad, estado de salud y medicamentos que estén tomando. El método que
+    utilizamos no contamos calorías, lo que contamos son carbohidratos, motivo por el cual bajaras de peso
+    de una forma más rápida que con las dietas convencionales donde solo se cuentan calorías; con nuestro
+    método podrás comer la cantidad que gustes de carnes blancas y verduras, con la condición de que te
+    sirvas siempre en platos pequeños una cantidad de carne blanca ( proteína) y el doble de verdura , pero
+    podrás repetir esa porción cuantas veces gustes siempre y cuando te pares a servirte, para de esta forma
+    ir rompiendo la compulsión a seguir comiendo a la que estamos acostumbrados. Te daremos una tabla
+    de equivalentes de cereales ( carbohidratos) los cuales trataras de evitar poco a poco, teniendo en
+    cuenta que entre menos cereales consumas, más rápido bajaras de peso; es muy importante el consumo
+    de agua natural, por lo que tendrás que consumir un mínimo de 2 litros de agua por día, así como
+    evitar a toda costa el azúcar, pero podrás consumir sustitutos tales como stevia o splenda para
+    endulzar tus alimentos.
+    <br/><br/>
+    La primera etapa del plan de dieta consiste en una desintoxicación de tu cuerpo, por lo que No
+    debes de comer Lácteos ( leche, yogurt, quesos), evitar Carnes rojas ( res, puerco, chivo) y no consumir
+    leguminosas ( frijol, lenteja) .Podrás consumir leche de almendra o coco para el suplemento que
+    manejamos. También podrás consumir la cantidad que gustes de carnes blancas ( pescado, pollo,
+    mariscos, conejo, pavo). Si no te has desparasitado durante este año es conveniente hacerlo , así como
+    eliminar hongos de la flora intestinal y reforzarlo con lactobacilos, tu medico te guiara como hacerlo
+    para que logres una desintoxicación exitosa. 
+    <br/><br/>
+    En las consultas subsecuentes al menú se le irán agregando todos los grupos de alimentos, para
+    que al final de tu proceso estés comiendo de todo pero en las cantidades adecuadas y seguir bajando de
+    peso y mantenerte al final en tu peso deseado.
+    <br/><br/>
+    Durante el desarrollo de tu dieta es muy importante que trates de comer cada 3-4 hrs donde
+    podrás comer todos los alimentos que ahí se te indican si tienes mucho apetito o tu elegir alguno de la
+    lista sin no tienes tanto apetito, pero por ningún motivo omitas tus colaciones.
+    <br/><br/>
+    Estamos seguros que lograras tus metas y llegaras a tu peso deseado, logrando pasar las tres
+    etapas del tratamiento: aceleración del metabolismo, estabilización y mantenimiento, para que no
+    recuperes el peso perdido. No suspendas tu tratamiento repentinamente sin antes estabilizarte para
+    evitar los famosos rebotes.
+    <br/><br/>
+    En la parte trasera de tu carnet se encuentra el Whatsaap de tu Medico al cual podrás contactar en
+    cualquier momento si presentas alguna duda o malestar durante tu tratamiento.
+    <br/><br/>
+    <b>Pineda Integralmedic</b>
+    """
+    story.append(Paragraph(texto_bienvenida, styles['Normal']))
 
+    # Forzamos un salto a una nueva página
+    story.append(PageBreak())
+
+    # --- PÁGINA 2: EQUIVALENTES ---
+    if logo_path:
+        story.append(Image(logo_path, width=2*inch, height=1.5*inch, hAlign='CENTER'))
+
+
+    linea_texto = '_' * 80 
+    linea_separadora = Paragraph(linea_texto, styles['Normal'])
+    story.append(linea_separadora)
+    
+    story.append(Spacer(1, 0.25*inch))
+    story.append(Paragraph("EQUIVALENTES DE CEREALES", styles['h1']))
+    story.append(Spacer(1, 0.2*inch))
+
+    texto_equivalentes = """
+        1. UNA TORTILLA DE MAIZ<br/>
+        2. 4 TORETILLAS DE NOPAL 20 KCAL<br/>
+        3. 3 TORTILLAS DE TOMATE DE 30 KCAL<br/>
+        4. UNA REBANADA DE PAN INTEGRAL<br/>
+        5. 2 PIEZAS DE PAN DE 45 KCAL ( SARALEE)<br/>
+        6. 1/2 TAZA DE ARROZ INTEGRAL<br/>
+        7. 1/2 TAZA DE QUINOA<br/>
+        8. 1/2 PAPA COCIDA<br/>
+        9. 1/2 TAZA DE ELOTES<br/>
+        10. 1/2 TAZA DE AVENA<br/>
+        11. 5 GALLETAS HABANERA INTEGRALES<br/>
+        12. 1 PAQUETE DE TOSTADAS (SALMA)<br/>
+        13. 2 CUCHARADAS DE GRANOLA<br/>
+        14. 1/2 TAZA DE PASTA INTEGRAL
+    """
+    story.append(Paragraph(texto_equivalentes, styles['Normal']))
+
+    # Forzamos otro salto de página
+    story.append(PageBreak())
+
+    # --- PÁGINA 3: PLAN NUTRICIONAL PERSONALIZADO ---
+    if logo_path:
+        story.append(Image(logo_path, width=2*inch, height=1.5*inch, hAlign='CENTER'))
+        
+    linea_texto = '_' * 80 
+    linea_separadora = Paragraph(linea_texto, styles['Normal'])
+
+    # Y simplemente añádelo a tu historia donde quieras la línea
+    story.append(linea_separadora)
+    story.append(Paragraph("Plan Nutricional", styles['h1']))
+    story.append(Spacer(1, 0.2*inch))
+    
+    info_paciente = f"""
+        <b>Paciente:</b> {paciente.nombre} {paciente.apellidos}<br/>
+        <b>Fecha:</b> {plan.fecha_creacion.strftime('%d/%m/%Y')}<br/>
+        <b>Mediciones:</b> Peso: {plan.consulta.peso} kg | Altura: {plan.consulta.altura} cm | IMC: {plan.consulta.imc:.2f}
+    """
+    story.append(Paragraph(info_paciente, styles['Normal']))
+    story.append(Spacer(1, 0.3*inch))
+
+    story.append(Paragraph("<b><u>Plan Nutricional:</u></b>", styles['Normal']))
+    story.append(Spacer(1, 0.2*inch))
+    
     contenido_html = plan.contenido.replace('\n', '<br/>')
+    story.append(Paragraph(contenido_html, styles['BodyText'])) # Platypus manejará los saltos de página si es muy largo
 
-    plan_paragraph = Paragraph(contenido_html, style_normal)
+    def pie_de_pagina(canvas, doc):
+        canvas.saveState()
+        canvas.setFont('Helvetica-Oblique', 9)
+        canvas.setFillColor(colors.HexColor('#0000FF')) # Color azul
 
-    plan_paragraph.wrapOn(p, width - 2*inch, height - 5*inch)
-    plan_paragraph.drawOn(p, inch, height - 4.5*inch - plan_paragraph.height)
-           
-    # Pie de página
-    p.line(inch, 1.1*inch, width - inch, 1.1*inch)
-    p.setFont("Helvetica-Oblique", 10)
-    p.drawCentredString(width / 2, 0.25 * inch, "Pineda IntegralMedic - Plan Nutricional Personalizado")
+        text_object = canvas.beginText()
+        text_object.setTextOrigin(inch, 0.75 * inch)
+        text_object.setLeading(12)
+        text_object.textLine("Tel. (646) 176-5422 Cel. (646) 171-6178")
+        text_object.textLine("vpineda138@hotmail.com pinedamedic@gmail.com www.pinedaintegralmedic.com")
+        text_object.textLine("www.pinedamedic.com Pineda Integralmedic")
+        canvas.drawText(text_object)
+        
+        canvas.restoreState()
     
-    # Cerrar el PDF
-    p.showPage()
-    p.save()
+    # 3. Construimos el PDF. Platypus hace toda la magia de la paginación.
+    doc.build(story, onFirstPage=pie_de_pagina, onLaterPages=pie_de_pagina)
     
-    # Obtener el valor del buffer y crear la respuesta HTTP
+    # --- Devolver la respuesta ---
     buffer.seek(0)
-    response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="Plan_Nutricional_{plan.consulta.paciente.apellidos}.pdf"'
+    return buffer
     
+@login_required
+@group_required('Medicos')
+def generar_pdf_plan(request, plan_id):
+    plan = get_object_or_404(PlanNutricional, id=plan_id)
+    paciente = plan.consulta.paciente
+    buffer = generar_pdf(plan_id)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Plan_Nutricional_{paciente.apellidos}.pdf"'
     return response
+
+@login_required
+@group_required('Medicos')
+def enviar_plan_email(request, plan_id):
+    user = request.user
+    plan = get_object_or_404(PlanNutricional, id=plan_id)
+    paciente = plan.consulta.paciente
+    buffer= generar_pdf(plan_id)
+    email = EmailMessage(
+        subject=f'Plan Nutricional - Pineda IntegralMedic',
+        body=f'Estimado/a {paciente.nombre},\n\nAdjunto encontrará su plan nutricional personalizado.\n\nSaludos cordiales,\nPineda IntegralMedic',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[paciente.email],
+    )
+    email.attach(f'Plan_Nutricional_{paciente.apellidos}.pdf', buffer.getvalue(), 'application/pdf')
+    
+    try:
+        email.send()
+        messages.success(request, f'Plan nutricional enviado correctamente a {paciente.email}.')
+    except Exception as e:
+        messages.error(request, f'Error al enviar el correo: {str(e)}')
+    
+    return redirect('detalle_plan', plan_id=plan.id)
+
 
 @login_required
 @group_required('Medicos')
@@ -510,107 +619,6 @@ def enviar_historial_email(request, consulta_id):
         messages.error(request, f'Error al enviar el correo: {str(e)}')
     
     return redirect('historial_completo',consulta.id)
-
-@login_required
-@group_required('Medicos')
-def enviar_plan_email(request, plan_id):
-    user = request.user
-    plan = get_object_or_404(PlanNutricional, id=plan_id)
-    paciente = plan.consulta.paciente
-    
-    if not paciente.email:
-        messages.error(request, f'El paciente {paciente.nombre} {paciente.apellidos} no tiene un correo electrónico registrado.')
-        return redirect('detalle_plan', plan_id=plan.id)
-    
-    # Generar el PDF
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
-
-    # Define estilos para los párrafos
-    styles = getSampleStyleSheet()
-    style_normal = styles['Normal']
-    style_normal.leading = 14
-    style_bold = styles['h2']
-
-     # --- ENCABEZADO ---
-    logo_path = None
-    try:
-        # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
-        logo_filename = 'Logo3.png' 
-        logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
-        if os.path.exists(logo_path_full):
-            logo_path = logo_path_full
-    except (IndexError, AttributeError):
-        pass
-
-    # --- ENCABEZADO ---
-    y_position = height - inch 
-
-    if logo_path:
-        p.drawImage(logo_path, x=2.6*inch, y=height - 1.50*inch, width=2.8*inch, preserveAspectRatio=True, mask='auto')
-
-    p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
-    
-    # Título
-    p.setFont("Helvetica-Bold", 18)
-    p.drawCentredString(width/2, height - 1.4*inch, "Plan Nutricional")
-    
-    # Información del paciente
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 2*inch, "Paciente:")
-    p.setFont("Helvetica", 12)
-    p.drawString(2*inch, height - 2*inch, f"{paciente.nombre} {paciente.apellidos}")
-    
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 2.5*inch, "Fecha:")
-    p.setFont("Helvetica", 12)
-    p.drawString(2*inch, height - 2.5*inch, plan.fecha_creacion.strftime("%d/%m/%Y"))
-    
-    # Mediciones
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 3*inch, "Mediciones:")
-    p.setFont("Helvetica", 12)
-    p.drawString(2*inch, height - 3*inch, 
-                f"Peso: {plan.consulta.peso} kg | Altura: {plan.consulta.altura} cm | IMC: {plan.consulta.imc:.2f}")
-    
-    # Contenido del plan
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(inch, height - 4*inch, "Plan Nutricional:")
-    
-    contenido_html = plan.contenido.replace('\n', '<br/>')
-
-    plan_paragraph = Paragraph(contenido_html, style_normal)
-
-    plan_paragraph.wrapOn(p, width - 2*inch, height - 5*inch)
-    plan_paragraph.drawOn(p, inch, height - 4.5*inch - plan_paragraph.height)
-    
-    # Pie de página
-    p.line(inch, 1.1*inch, width - inch, 1.1*inch)
-    p.setFont("Helvetica-Oblique", 10)
-    p.drawCentredString(width/2, inch, "Pineda IntegralMedic - Plan Nutricional Personalizado")
-    
-    # Cerrar el PDF
-    p.showPage()
-    p.save()
-    
-    # Preparar el correo electrónico
-    buffer.seek(0)
-    email = EmailMessage(
-        subject=f'Plan Nutricional - Pineda IntegralMedic',
-        body=f'Estimado/a {paciente.nombre},\n\nAdjunto encontrará su plan nutricional personalizado.\n\nSaludos cordiales,\nPineda IntegralMedic',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[paciente.email],
-    )
-    email.attach(f'Plan_Nutricional_{paciente.apellidos}.pdf', buffer.getvalue(), 'application/pdf')
-    
-    try:
-        email.send()
-        messages.success(request, f'Plan nutricional enviado correctamente a {paciente.email}.')
-    except Exception as e:
-        messages.error(request, f'Error al enviar el correo: {str(e)}')
-    
-    return redirect('detalle_plan', plan_id=plan.id)
 
 # Nuevas vistas para recetas
 @login_required
