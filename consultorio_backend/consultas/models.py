@@ -36,6 +36,12 @@ class PlanNutricional(models.Model):
     contenido_colacion = models.TextField(default="")
     contenido_comida = models.TextField(default="")
     contenido_cena = models.TextField(default="")
+    # Horarios
+    horario_desayuno = models.TimeField(null=True, blank=True)
+    horario_colacion1 = models.TimeField(null=True, blank=True, verbose_name="Horario colación 1")
+    horario_comida = models.TimeField(null=True, blank=True)
+    horario_colacion2 = models.TimeField(null=True, blank=True, verbose_name="Horario colación 2")
+    horario_cena = models.TimeField(null=True, blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

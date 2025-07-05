@@ -94,19 +94,19 @@
     
 		<div class="mb-3">
 		  <div class="form-check">
-		    <input class="form-check-input" type="checkbox" value="Nutravit, 2 cucharadas con 300ml de leche de almendra o coco" id="opcionDesayuno1" onclick="actualizarTextareaDesayuno(this)">
+		    <input class="form-check-input" type="checkbox" value="Nutravit, 2 cucharadas con 300ml de leche de almendra o coco" id="opcionDesayuno1" onclick="actualizarTextareaDesayuno(this)" checked>
 		    <label class="form-check-label" for="opcionDesayuno1">
                       Nutravit, 2 cucharadas con 300ml de leche de almendra o coco
 		    </label>
 		  </div>
 		  <div class="form-check">
-		    <input class="form-check-input" type="checkbox" value="2 huevos" id="opcionDesayuno2" onclick="actualizarTextareaDesayuno(this)">
+		    <input class="form-check-input" type="checkbox" value="2 huevos" id="opcionDesayuno2" onclick="actualizarTextareaDesayuno(this)" checked>
 		    <label class="form-check-label" for="opcionDesayuno2">
                       2 huevos
 		    </label>
 		  </div>
 		  <div class="form-check">
-		    <input class="form-check-input" type="checkbox" value="Carne blanca con verduras" id="opcionDesayuno3" onclick="actualizarTextareaDesayuno(this)">
+		    <input class="form-check-input" type="checkbox" value="Carne blanca con verduras" id="opcionDesayuno3" onclick="actualizarTextareaDesayuno(this)" checked>
 		    <label class="form-check-label" for="opcionDesayuno3">
                       Carne blanca con verduras
 		    </label>
@@ -119,6 +119,12 @@
                         {% if form.contenido_desayuno.errors %}<div class="invalid-feedback d-block">{{ form.contenido_desayuno.errors }}</div>{% endif %}
                         <small class="form-text text-muted">Detalles y opciones para el desayuno.</small>
                     </div>
+                    <div class="form-group mt-3">
+                        <label for="{{ form.horario_desayuno.id_for_label }}">Horario del desayuno:</label>
+                        {{ form.horario_desayuno }}
+                        {% if form.horario_desayuno.errors %}<div class="invalid-feedback d-block">{{ form.horario_desayuno.errors }}</div>{% endif %}
+                        <small class="form-text text-muted">Hora recomendada para el desayuno.</small>
+                    </div>
                 </div>
 
               <div class="tab-pane fade" id="colacion-pane" role="tabpanel" aria-labelledby="colacion-tab" tabindex="0">
@@ -127,25 +133,25 @@
     
 		<div class="mb-3">
 		  <div class="form-check">
-		    <input class="form-check-input" type="checkbox" value="1/2 fruta" id="opcionColacion1" onclick="actualizarTextareaColacion(this)">
+		    <input class="form-check-input" type="checkbox" value="1/2 fruta" id="opcionColacion1" onclick="actualizarTextareaColacion(this)" checked>
 		    <label class="form-check-label" for="opcionColacion1">
                       1/2 fruta
 		    </label>
 		  </div>
 		  <div class="form-check">
-		    <input class="form-check-input" type="checkbox" value="12 nueces o almendras" id="opcionColacion2" onclick="actualizarTextareaColacion(this)">
+		    <input class="form-check-input" type="checkbox" value="12 nueces o almendras" id="opcionColacion2" onclick="actualizarTextareaColacion(this)" checked>
 		    <label class="form-check-label" for="opcionColacion2">
                       12 nueces o almendras
 		    </label>
 		  </div>
 		  <div class="form-check">
-		    <input class="form-check-input" type="checkbox" value="Carne blanca con verduras" id="opcionColacion3" onclick="actualizarTextareaColacion(this)">
+		    <input class="form-check-input" type="checkbox" value="Carne blanca con verduras" id="opcionColacion3" onclick="actualizarTextareaColacion(this)" checked>
 		    <label class="form-check-label" for="opcionColacion3">
                       Carne blanca con verduras
 		    </label>
 		  </div>
 		  <div class="form-check">
-		    <input class="form-check-input" type="checkbox" value="Gelatina sin azucar" id="opcionColacion4" onclick="actualizarTextareaColacion(this)">
+		    <input class="form-check-input" type="checkbox" value="Gelatina sin azucar" id="opcionColacion4" onclick="actualizarTextareaColacion(this)" checked>
 		    <label class="form-check-label" for="opcionColacion4">
                       Gelatina sin azucar
 		    </label>
@@ -158,6 +164,24 @@
                         {% if form.contenido_colacion.errors %}<div class="invalid-feedback d-block">{{ form.contenido_colacion.errors }}</div>{% endif %}
                         <small class="form-text text-muted">Opciones para las colaciones de media mañana y media tarde.</small>
                     </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.horario_colacion1.id_for_label }}">Horario colación 1:</label>
+                                {{ form.horario_colacion1 }}
+                                {% if form.horario_colacion1.errors %}<div class="invalid-feedback d-block">{{ form.horario_colacion1.errors }}</div>{% endif %}
+                                <small class="form-text text-muted">Hora recomendada para la colación de media mañana.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.horario_colacion2.id_for_label }}">Horario colación 2:</label>
+                                {{ form.horario_colacion2 }}
+                                {% if form.horario_colacion2.errors %}<div class="invalid-feedback d-block">{{ form.horario_colacion2.errors }}</div>{% endif %}
+                                <small class="form-text text-muted">Hora recomendada para la colación de media tarde.</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
               <div class="tab-pane fade" id="comida-pane" role="tabpanel" aria-labelledby="comida-tab" tabindex="0">
@@ -166,20 +190,20 @@
     
 		<div class="mb-3">
 		  <div class="form-check">
-		    <input class="form-check-input" type="checkbox" value="Carne  blanca  (no frito o empanizado) verduras libre" id="opcionComida1" onclick="actualizarTextareaComida(this)">
+		    <input class="form-check-input" type="checkbox" value="Carne  blanca  (no frito o empanizado) verduras libre" id="opcionComida1" onclick="actualizarTextareaComida(this)" checked>
 		    <label class="form-check-label" for="opcionComida1">
                       Carne  blanca  (no frito o empanizado) verduras libre
 		    </label>
 		  </div>
 		  <div class="form-check">
 		    <input class="form-check-input" type="checkbox" value="Cocinar con aceite de coco,aguacate o uva 
-" id="opcionComida2" onclick="actualizarTextareaComida(this)">
+" id="opcionComida2" onclick="actualizarTextareaComida(this)" checked>
 		    <label class="form-check-label" for="opcionComida2">
                       Cocinar con aceite de coco,aguacate o uva 
 		    </label>
 		  </div>
 		  <div class="form-check">
-		    <input class="form-check-input" type="checkbox" value="1/2 pza de  Aguacate  y   2 cucharadas de aceite de olivo extra virgen" id="opcionComida3" onclick="actualizarTextareaComida(this)">
+		    <input class="form-check-input" type="checkbox" value="1/2 pza de  Aguacate  y   2 cucharadas de aceite de olivo extra virgen" id="opcionComida3" onclick="actualizarTextareaComida(this)" checked>
 		    <label class="form-check-label" for="opcionComida3">
                       1/2 pza de  Aguacate  y   2 cucharadas de aceite de olivo extra virgen
 		    </label>
@@ -192,6 +216,12 @@
                         {% if form.contenido_comida.errors %}<div class="invalid-feedback d-block">{{ form.contenido_comida.errors }}</div>{% endif %}
                         <small class="form-text text-muted">Detalles y opciones para la comida principal.</small>
                     </div>
+                    <div class="form-group mt-3">
+                        <label for="{{ form.horario_comida.id_for_label }}">Horario de la comida:</label>
+                        {{ form.horario_comida }}
+                        {% if form.horario_comida.errors %}<div class="invalid-feedback d-block">{{ form.horario_comida.errors }}</div>{% endif %}
+                        <small class="form-text text-muted">Hora recomendada para la comida principal.</small>
+                    </div>
                 </div>
 
               <div class="tab-pane fade" id="cena-pane" role="tabpanel" aria-labelledby="cena-tab" tabindex="0">
@@ -200,7 +230,7 @@
     
 		<div class="mb-3">
 		  <div class="form-check">
-		    <input class="form-check-input" type="checkbox" value="1 porcion de la comida" id="opcionCena1" onclick="actualizarTextareaCena(this)">
+		    <input class="form-check-input" type="checkbox" value="1 porcion de la comida" id="opcionCena1" onclick="actualizarTextareaCena(this)" checked>
 		    <label class="form-check-label" for="opcionCena1">
                       1 porcion de la comida
 		    </label>
@@ -212,6 +242,12 @@
                         {{ form.contenido_cena }}
                         {% if form.contenido_cena.errors %}<div class="invalid-feedback d-block">{{ form.contenido_cena.errors }}</div>{% endif %}
                         <small class="form-text text-muted">Detalles y opciones para la cena.</small>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="{{ form.horario_cena.id_for_label }}">Horario de la cena:</label>
+                        {{ form.horario_cena }}
+                        {% if form.horario_cena.errors %}<div class="invalid-feedback d-block">{{ form.horario_cena.errors }}</div>{% endif %}
+                        <small class="form-text text-muted">Hora recomendada para la cena.</small>
                     </div>
                 </div>
             </div>
@@ -236,16 +272,45 @@
 <script>
     // Aplicar clases de Bootstrap a los campos del formulario
     document.addEventListener('DOMContentLoaded', function() {
-        const formControls = document.querySelectorAll('textarea');
+        const formControls = document.querySelectorAll('textarea, input[type="time"]');
         formControls.forEach(function(element) {
             element.classList.add('form-control');
-            element.rows = 15;
+            
+            if (element.tagName === 'TEXTAREA') {
+                element.rows = 15;
+            }
             
             // Si hay errores, marcar el campo como inválido
             if (element.nextElementSibling && element.nextElementSibling.classList.contains('invalid-feedback')) {
                 element.classList.add('is-invalid');
             }
         });
+        
+        // Inicializar los textareas con los valores de los checkboxes marcados por defecto
+        // Solo ejecutar si el formulario está vacío (nuevo plan)
+        if (document.getElementById('id_contenido_desayuno').value.trim() === '') {
+            document.querySelectorAll('#desayuno-pane .form-check-input:checked').forEach(function(checkbox) {
+                actualizarTextareaDesayuno(checkbox);
+            });
+        }
+        
+        if (document.getElementById('id_contenido_colacion').value.trim() === '') {
+            document.querySelectorAll('#colacion-pane .form-check-input:checked').forEach(function(checkbox) {
+                actualizarTextareaColacion(checkbox);
+            });
+        }
+        
+        if (document.getElementById('id_contenido_comida').value.trim() === '') {
+            document.querySelectorAll('#comida-pane .form-check-input:checked').forEach(function(checkbox) {
+                actualizarTextareaComida(checkbox);
+            });
+        }
+        
+        if (document.getElementById('id_contenido_cena').value.trim() === '') {
+            document.querySelectorAll('#cena-pane .form-check-input:checked').forEach(function(checkbox) {
+                actualizarTextareaCena(checkbox);
+            });
+        }
     });
 
   function actualizarTextareaDesayuno(checkbox) {

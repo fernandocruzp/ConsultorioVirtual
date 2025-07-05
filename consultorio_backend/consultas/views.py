@@ -320,20 +320,23 @@ def generar_pdf(plan_id):
     story.append(Paragraph("<b><u>Plan Nutricional:</u></b>", styles['Normal']))
     story.append(Spacer(1, 0.2*inch))
     secciones_plan = [
-    ('Desayuno', plan.contenido_desayuno),
-    ('Colación', plan.contenido_colacion),
-    ('Comida', plan.contenido_comida),
-    ('Colación', plan.contenido_colacion), 
-    ('Cena', plan.contenido_cena)
+    ('Desayuno', plan.contenido_desayuno, plan.horario_desayuno),
+    ('Colación 1', plan.contenido_colacion, plan.horario_colacion1),
+    ('Comida', plan.contenido_comida, plan.horario_comida),
+    ('Colación 2', plan.contenido_colacion, plan.horario_colacion2), 
+    ('Cena', plan.contenido_cena, plan.horario_cena)
     ]
 
     # Definimos estilos para los títulos y el contenido de las comidas
     style_titulo_comida = styles['h3']
     style_contenido_comida = styles['BodyText']
     
-    for titulo, contenido in secciones_plan:
+    for titulo, contenido, horario in secciones_plan:
         if contenido and contenido.strip():        
-            story.append(Paragraph(titulo, style_titulo_comida))
+            titulo_texto = titulo
+            if horario:
+                titulo_texto += f" ({horario.strftime('%H:%M')})"
+            story.append(Paragraph(titulo_texto, style_titulo_comida))
             contenido_html = contenido.replace('\n', '<br/>')
             story.append(Paragraph(contenido_html, style_contenido_comida))
             story.append(Spacer(1, 0.2*inch))

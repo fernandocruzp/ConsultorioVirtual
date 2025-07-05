@@ -80,6 +80,17 @@
         <div class="tab-content pt-3" id="planTabContent">
             
             <div class="tab-pane fade show active" id="desayuno-pane" role="tabpanel">
+                <div class="row mb-2">
+                    <div class="col-md-3 font-weight-bold">Horario recomendado:</div>
+                    <div class="col-md-9">
+                        {% if plan.horario_desayuno %}
+                            {{ plan.horario_desayuno|time:"H:i" }}
+                        {% else %}
+                            <span class="text-muted">No especificado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr>
                 {% if plan.contenido_desayuno %}
                     <p>{{ plan.contenido_desayuno|linebreaksbr }}</p>
                 {% else %}
@@ -88,6 +99,27 @@
             </div>
 
             <div class="tab-pane fade" id="colacion-pane" role="tabpanel">
+                <div class="row mb-2">
+                    <div class="col-md-3 font-weight-bold">Horario colación 1:</div>
+                    <div class="col-md-9">
+                        {% if plan.horario_colacion1 %}
+                            {{ plan.horario_colacion1|time:"H:i" }}
+                        {% else %}
+                            <span class="text-muted">No especificado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-3 font-weight-bold">Horario colación 2:</div>
+                    <div class="col-md-9">
+                        {% if plan.horario_colacion2 %}
+                            {{ plan.horario_colacion2|time:"H:i" }}
+                        {% else %}
+                            <span class="text-muted">No especificado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr>
                 {% if plan.contenido_colacion %}
                     <p>{{ plan.contenido_colacion|linebreaksbr }}</p>
                 {% else %}
@@ -96,6 +128,17 @@
             </div>
 
             <div class="tab-pane fade" id="comida-pane" role="tabpanel">
+                <div class="row mb-2">
+                    <div class="col-md-3 font-weight-bold">Horario recomendado:</div>
+                    <div class="col-md-9">
+                        {% if plan.horario_comida %}
+                            {{ plan.horario_comida|time:"H:i" }}
+                        {% else %}
+                            <span class="text-muted">No especificado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr>
                 {% if plan.contenido_comida %}
                     <p>{{ plan.contenido_comida|linebreaksbr }}</p>
                 {% else %}
@@ -104,6 +147,17 @@
             </div>
 
             <div class="tab-pane fade" id="cena-pane" role="tabpanel">
+                <div class="row mb-2">
+                    <div class="col-md-3 font-weight-bold">Horario recomendado:</div>
+                    <div class="col-md-9">
+                        {% if plan.horario_cena %}
+                            {{ plan.horario_cena|time:"H:i" }}
+                        {% else %}
+                            <span class="text-muted">No especificado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr>
                 {% if plan.contenido_cena %}
                     <p>{{ plan.contenido_cena|linebreaksbr }}</p>
                 {% else %}
