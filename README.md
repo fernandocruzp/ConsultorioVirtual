@@ -1,6 +1,6 @@
 # Consultorio Virtual
 
-Aplicación de escritorio para la gestión de un consultorio nutricional, desarrollada con Django y Electron.
+Aplicación web para la gestión de un consultorio nutricional, desarrollada con Django.
 
 ## Características
 
@@ -14,8 +14,6 @@ Aplicación de escritorio para la gestión de un consultorio nutricional, desarr
 ## Requisitos
 
 - Python 3.8+
-- Node.js 14+
-- npm o yarn
 
 ## Instalación
 
@@ -32,15 +30,10 @@ source venv/bin/activate  # En Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Instalar dependencias de Electron:
+3. Iniciar la aplicación:
 ```
-cd electron_frontend
-npm install
-```
-
-4. Iniciar la aplicación:
-```
-npm start
+cd consultorio_backend
+python manage.py runserver
 ```
 
 ## Estructura del proyecto
@@ -49,9 +42,8 @@ npm start
   - `pacientes/`: App para gestión de pacientes
   - `consultas/`: App para registro de consultas
   - `agenda/`: App para gestión de citas
-- `electron_frontend/`: Frontend Electron
-  - `main.js`: Punto de entrada de Electron
-  - `src/`: Código fuente del frontend
+- `templates/`: Plantillas HTML
+- `static/`: Archivos estáticos (CSS, JS, imágenes)
 
 ## Desarrollo
 
@@ -61,8 +53,4 @@ cd consultorio_backend
 python manage.py runserver
 ```
 
-Para ejecutar la aplicación Electron:
-```
-cd electron_frontend
-npm start
-```
+La aplicación estará disponible en http://127.0.0.1:8000/
