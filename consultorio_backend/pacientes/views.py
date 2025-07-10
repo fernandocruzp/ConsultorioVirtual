@@ -379,112 +379,9 @@ def enviar_historial_email(request, paciente_id):
 @login_required
 @group_required('Medicos')
 def generar_pdf_historial(request, paciente_id):
-    paciente = get_object_or_404(Paciente, id=paciente_id)
+    buffer, paciente = generar_pdf_historial_buffer(paciente_id)
     
-    # Obtener historial de consultas del paciente
-    historial_consultas = Consulta.objects.filter(
-        paciente=paciente
-    ).order_by('-fecha')
-    
-    # Crear un buffer para el PDF
-    buffer = io.BytesIO()
-    
-    # Crear el objeto PDF usando ReportLab
-    p = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
-
-    # Define estilos para los párrafos
-    styles = getSampleStyleSheet()
-    style_normal = styles['Normal']
-    style_normal.leading = 14
-    style_bold = styles['h2']
-
-    # --- ENCABEZADO ---
-    logo_path = None
-    try:
-        # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
-        logo_filename = 'Logo3.png' 
-        logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
-        if os.path.exists(logo_path_full):
-            logo_path = logo_path_full
-    except (IndexError, AttributeError):
-        pass
-
-    # --- ENCABEZADO ---
-    y_position = height - inch 
-
-    if logo_path:
-        p.drawImage(logo_path, x=2.6*inch, y=height - 1.50*inch, width=2.8*inch, preserveAspectRatio=True, mask='auto')
-
-    p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
-    
-    # Título
-    p.setFont("Helvetica-Bold", 18)
-    p.drawCentredString(width/2, height - 1.8*inch, "HISTORIAL")
-    
-    # Información del paciente
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 2.5*inch, "Paciente:")
-    p.setFont("Helvetica", 12)
-    p.drawString(2*inch, height - 2.5*inch, f"{paciente.nombre} {paciente.apellidos}")
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 2.7*inch, "Para más información usa el siguiente enlace:")
-    p.setFont("Helvetica", 12)
-    p.drawString(inch, height - 2.9*inch, "https://pinedaintegralmedic.onrender.com/portal/")
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 3.1*inch, "Llave de acceso:")
-    p.drawString(2.5*inch, height - 3.1*inch, f"{paciente.llave_unica}")
-    
-    # Contenido del historial
-    data = [[
-        h.fecha.strftime('%d/%m/%Y'),                 
-        f"{h.circunferencia_cintura} cm" if h.circunferencia_cintura else "-",
-        f"{h.circunferencia_cadera} cm" if h.circunferencia_cadera else "-",
-        f"{h.circunferencia_pecho} cm" if h.circunferencia_pecho else "-",
-        f"{h.tratamiento}" if hasattr(h, 'tratamiento') and h.tratamiento else "-",
-        f"{h.tension_arterial}" if h.tension_arterial else "-",
-        f"{h.peso} kg" if h.peso else "-",               
-        f"{h.altura} cm" if h.altura else "-",             
-        f"{h.imc:.2f}" if h.imc else "-"
-    ]
-    for h in historial_consultas]
-
-    data.insert(0,["Fecha" , "Cintura", "Cadera", "Pecho", "Tx", "T/A","Peso", "Altura", "IMC"])
-
-    plan_table = Table(data, colWidths=[1.0*inch, 0.75*inch,0.75*inch,0.75*inch, 0.5*inch,0.75*inch,0.75*inch,0.75*inch,0.5*inch])
-
-    style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4F81BD')), # Color de fondo para la cabecera
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke), # Color de texto para la cabecera
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'), # Alineación centrada para toda la tabla
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), # Alineación vertical centrada
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), # Fuente en negrita para la cabecera
-        ('FONTSIZE', (0, 0), (-1, 0), 12), # Tamaño de fuente para la cabecera
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12), # Padding inferior para la cabecera
-        
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige), # Color de fondo para las filas de datos
-        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black), # Color de texto para los datos
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'), # Fuente para los datos
-        ('FONTSIZE', (0, 1), (-1, -1), 10),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black) # Dibuja una cuadrícula en toda la tabla
-    ])
-    plan_table.setStyle(style)
-
-    y_position = height - 4*inch
-    ancho_necesario, alto_necesario = plan_table.wrapOn(p, width - 2*inch, 0)
-    plan_table.drawOn(p, inch, y_position - alto_necesario)
-           
-    # Pie de página
-    p.line(inch, 1.1*inch, width - inch, 1.1*inch)
-    p.setFont("Helvetica-Oblique", 10)
-    p.drawCentredString(width/2, inch, "Pineda IntegralMedic - Historial")
-    
-    # Cerrar el PDF
-    p.showPage()
-    p.save()
-    
-    # Obtener el valor del buffer y crear la respuesta HTTP
-    buffer.seek(0)
+    # Preparar la respuesta HTTP
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="Historial_{paciente.apellidos}.pdf"'
     
@@ -493,112 +390,7 @@ def generar_pdf_historial(request, paciente_id):
 @login_required
 @group_required('Medicos')
 def enviar_historial_email(request, paciente_id):
-    paciente = get_object_or_404(Paciente, id=paciente_id)
-    
-    # Obtener historial de consultas del paciente
-    historial_consultas = Consulta.objects.filter(
-        paciente=paciente
-    ).order_by('-fecha')
-    
-    # Crear un buffer para el PDF
-    buffer = io.BytesIO()
-    
-    # Crear el objeto PDF usando ReportLab
-    p = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
-
-    # Define estilos para los párrafos
-    styles = getSampleStyleSheet()
-    style_normal = styles['Normal']
-    style_normal.leading = 14
-    style_bold = styles['h2']
-
-    # --- ENCABEZADO ---
-    logo_path = None
-    try:
-        # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
-        logo_filename = 'Logo3.png' 
-        logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
-        if os.path.exists(logo_path_full):
-            logo_path = logo_path_full
-    except (IndexError, AttributeError):
-        pass
-
-    # --- ENCABEZADO ---
-    y_position = height - inch 
-
-    if logo_path:
-        p.drawImage(logo_path, x=2.6*inch, y=height - 1.50*inch, width=2.8*inch, preserveAspectRatio=True, mask='auto')
-        
-    p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
-    
-    # Título
-    p.setFont("Helvetica-Bold", 18)
-    p.drawCentredString(width/2, height - 1.8*inch, "HISTORIAL")
-    
-    # Información del paciente
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 2.5*inch, "Paciente:")
-    p.setFont("Helvetica", 12)
-    p.drawString(2*inch, height - 2.5*inch, f"{paciente.nombre} {paciente.apellidos}")
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 2.7*inch, "Para más información usa el siguiente enlace:")
-    p.setFont("Helvetica", 12)
-    p.drawString(inch, height - 2.9*inch, "https://pinedaintegralmedic.onrender.com/portal/")
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(inch, height - 3.1*inch, "Llave de acceso:")
-    p.drawString(2.5*inch, height - 3.1*inch, f"{paciente.llave_unica}")
-    
-    # Contenido del historial
-    data = [[
-        h.fecha.strftime('%d/%m/%Y'),                 
-        f"{h.circunferencia_cintura} cm" if h.circunferencia_cintura else "-",
-        f"{h.circunferencia_cadera} cm" if h.circunferencia_cadera else "-",
-        f"{h.circunferencia_pecho} cm" if h.circunferencia_pecho else "-",
-        f"{h.tratamiento}" if hasattr(h, 'tratamiento') and h.tratamiento else "-",
-        f"{h.tension_arterial}" if h.tension_arterial else "-",
-        f"{h.peso} kg" if h.peso else "-",               
-        f"{h.altura} cm" if h.altura else "-",             
-        f"{h.imc:.2f}" if h.imc else "-"
-    ]
-    for h in historial_consultas]
-
-    data.insert(0,["Fecha" , "Cintura", "Cadera", "Pecho", "Tx", "T/A","Peso", "Altura", "IMC"])
-
-    plan_table = Table(data, colWidths=[1.0*inch, 0.75*inch,0.75*inch,0.75*inch, 0.5*inch,0.75*inch,0.75*inch,0.75*inch,0.5*inch])
-
-    style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4F81BD')), # Color de fondo para la cabecera
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke), # Color de texto para la cabecera
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'), # Alineación centrada para toda la tabla
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), # Alineación vertical centrada
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), # Fuente en negrita para la cabecera
-        ('FONTSIZE', (0, 0), (-1, 0), 12), # Tamaño de fuente para la cabecera
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12), # Padding inferior para la cabecera
-        
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige), # Color de fondo para las filas de datos
-        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black), # Color de texto para los datos
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'), # Fuente para los datos
-        ('FONTSIZE', (0, 1), (-1, -1), 10),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black) # Dibuja una cuadrícula en toda la tabla
-    ])
-    plan_table.setStyle(style)
-
-    y_position = height - 4*inch
-    ancho_necesario, alto_necesario = plan_table.wrapOn(p, width - 2*inch, 0)
-    plan_table.drawOn(p, inch, y_position - alto_necesario)
-           
-    # Pie de página
-    p.line(inch, 1.1*inch, width - inch, 1.1*inch)
-    p.setFont("Helvetica-Oblique", 10)
-    p.drawCentredString(width/2, inch, "Pineda IntegralMedic - Historial")
-    
-    # Cerrar el PDF
-    p.showPage()
-    p.save()
-    
-    # Preparar el correo electrónico
-    buffer.seek(0)
+    buffer, paciente = generar_pdf_historial_buffer(paciente_id)
     
     # Verificar si el paciente tiene correo electrónico
     if not paciente.email:
@@ -621,3 +413,172 @@ def enviar_historial_email(request, paciente_id):
         messages.error(request, f'Error al enviar el correo: {str(e)}')
     
     return redirect(f'/pacientes/historial/{paciente_id}/')
+def generar_pdf_historial_buffer(paciente_id):
+    """
+    Función refactorizada para generar el buffer del PDF del historial.
+    Esta función puede ser reutilizada por diferentes vistas.
+    """
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+    
+    # Obtener historial de consultas del paciente
+    historial_consultas = Consulta.objects.filter(
+        paciente=paciente
+    ).order_by('-fecha')
+    
+    # Crear un buffer para el PDF
+    buffer = io.BytesIO()
+    
+    # Crear el objeto PDF usando ReportLab
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    # Define estilos para los párrafos
+    styles = getSampleStyleSheet()
+    style_normal = styles['Normal']
+    style_normal.leading = 14
+    style_bold = styles['h2']
+
+    # --- ENCABEZADO ---
+    logo_path = None
+    try:
+        # CORRECCIÓN: Usar el nombre de TU archivo "lavado"
+        logo_filename = 'Logo3.png' 
+        logo_path_full = os.path.join(settings.STATICFILES_DIRS[0], 'img', logo_filename)
+        if os.path.exists(logo_path_full):
+            logo_path = logo_path_full
+    except (IndexError, AttributeError):
+        pass
+
+    # --- ENCABEZADO ---
+    y_position = height - inch 
+
+    if logo_path:
+        p.drawImage(logo_path, x=2.6*inch, y=height - 1.50*inch, width=2.8*inch, preserveAspectRatio=True, mask='auto')
+
+    p.line(inch, height - 1.2*inch, width - inch, height - 1.2*inch)
+    
+    # Título
+    p.setFont("Helvetica-Bold", 18)
+    p.drawCentredString(width/2, height - 1.8*inch, "HISTORIAL")
+    
+    # Información del paciente
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 2.5*inch, "Paciente:")
+    p.setFont("Helvetica", 12)
+    p.drawString(2*inch, height - 2.5*inch, f"{paciente.nombre} {paciente.apellidos}")
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 2.7*inch, "Para más información usa el siguiente enlace:")
+    p.setFont("Helvetica", 12)
+    p.drawString(inch, height - 2.9*inch, "https://pinedaintegralmedic.onrender.com/portal/")
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, height - 3.1*inch, "Llave de acceso:")
+    p.drawString(2.5*inch, height - 3.1*inch, f"{paciente.llave_unica}")
+    
+    # Contenido del historial
+    data = [[
+        h.fecha.strftime('%d/%m/%Y'),                 
+        f"{h.circunferencia_cintura} cm" if h.circunferencia_cintura else "-",
+        f"{h.circunferencia_cadera} cm" if h.circunferencia_cadera else "-",
+        f"{h.circunferencia_pecho} cm" if h.circunferencia_pecho else "-",
+        f"{h.tratamiento}" if hasattr(h, 'tratamiento') and h.tratamiento else "-",
+        f"{h.tension_arterial}" if h.tension_arterial else "-",
+        f"{h.peso} kg" if h.peso else "-",               
+        f"{h.altura} cm" if h.altura else "-",             
+        f"{h.imc:.2f}" if h.imc else "-"
+    ]
+    for h in historial_consultas]
+
+    data.insert(0,["Fecha" , "Cintura", "Cadera", "Pecho", "Tx", "T/A","Peso", "Altura", "IMC"])
+
+    plan_table = Table(data, colWidths=[1.0*inch, 0.75*inch,0.75*inch,0.75*inch, 0.5*inch,0.75*inch,0.75*inch,0.75*inch,0.5*inch])
+
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4F81BD')), # Color de fondo para la cabecera
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke), # Color de texto para la cabecera
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'), # Alineación centrada para toda la tabla
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), # Alineación vertical centrada
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), # Fuente en negrita para la cabecera
+        ('FONTSIZE', (0, 0), (-1, 0), 12), # Tamaño de fuente para la cabecera
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12), # Padding inferior para la cabecera
+        
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige), # Color de fondo para las filas de datos
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black), # Color de texto para los datos
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'), # Fuente para los datos
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black) # Dibuja una cuadrícula en toda la tabla
+    ])
+    plan_table.setStyle(style)
+
+    y_position = height - 4*inch
+    ancho_necesario, alto_necesario = plan_table.wrapOn(p, width - 2*inch, 0)
+    plan_table.drawOn(p, inch, y_position - alto_necesario)
+           
+    # Pie de página
+    p.line(inch, 1.1*inch, width - inch, 1.1*inch)
+    p.setFont("Helvetica-Oblique", 10)
+    p.drawCentredString(width/2, inch, "Pineda IntegralMedic - Historial")
+    
+    # Cerrar el PDF
+    p.showPage()
+    p.save()
+    
+    # Obtener el valor del buffer
+    buffer.seek(0)
+    return buffer, paciente
+@login_required
+@group_required('Medicos')
+def enviar_historial_whatsapp(request, paciente_id):
+    """
+    Función para abrir WhatsApp Web para enviar el historial.
+    Compatible con entornos de servidor web.
+    """
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+    
+    # Verificar si el paciente tiene teléfono
+    if not paciente.telefono:
+        messages.error(request, "El paciente no tiene un número de teléfono registrado.")
+        return redirect(f'/pacientes/historial/{paciente_id}/')
+    
+    import urllib.parse
+    import re
+    
+    # Formatear el número de teléfono (eliminar caracteres no numéricos)
+    telefono = re.sub(r'\D', '', paciente.telefono)
+    
+    # Si el número no tiene código de país, agregar +52 (México)
+    if len(telefono) == 10:  # Número mexicano sin código de país
+        telefono = "52" + telefono
+    
+    # Preparar mensaje para WhatsApp
+    mensaje = f"Hola {paciente.nombre}, te comparto tu historial médico de Pineda IntegralMedic."
+    mensaje_codificado = urllib.parse.quote(mensaje)
+    
+    # URL de WhatsApp Web
+    whatsapp_url = f"https://web.whatsapp.com/send?phone={telefono}&text={mensaje_codificado}"
+    
+    # Mostrar mensaje al usuario
+    messages.success(request, f"Para enviar el historial a {paciente.nombre} por WhatsApp: 1) Descargue primero el PDF usando el botón 'Guardar PDF', 2) Se abrirá WhatsApp Web en una nueva pestaña para enviar el mensaje.")
+    
+    # Devolver una respuesta que incluya JavaScript para abrir WhatsApp Web en una nueva pestaña
+    from django.http import HttpResponse
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Redirigiendo a WhatsApp</title>
+        <script>
+            // Abrir WhatsApp Web en una nueva pestaña
+            window.open("{whatsapp_url}", "_blank");
+            
+            // Redirigir de vuelta a la página del historial
+            window.location.href = "/pacientes/historial/{paciente_id}/";
+        </script>
+    </head>
+    <body>
+        <p>Redirigiendo a WhatsApp Web...</p>
+    </body>
+    </html>
+    """
+    
+    return HttpResponse(html)
