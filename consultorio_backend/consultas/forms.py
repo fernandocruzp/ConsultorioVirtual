@@ -32,14 +32,16 @@ class PlanNutricionalForm(forms.ModelForm):
         model = PlanNutricional
         fields = [
             'contenido_desayuno', 'horario_desayuno',
-            'contenido_colacion', 'horario_colacion1', 'horario_colacion2',
+            'contenido_colacion', 'horario_colacion1',
             'contenido_comida', 'horario_comida',
+            'contenido_colacion2', 'horario_colacion2',
             'contenido_cena', 'horario_cena'
         ]
         widgets = {
             'contenido_desayuno': forms.Textarea(attrs={'rows': 15}),
             'contenido_colacion': forms.Textarea(attrs={'rows': 15}),
             'contenido_comida': forms.Textarea(attrs={'rows': 15}),
+            'contenido_colacion2': forms.Textarea(attrs={'rows': 15}),
             'contenido_cena': forms.Textarea(attrs={'rows': 15}),
             'horario_desayuno': forms.TimeInput(attrs={'type': 'time'}),
             'horario_colacion1': forms.TimeInput(attrs={'type': 'time'}),

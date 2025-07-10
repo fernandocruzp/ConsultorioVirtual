@@ -67,10 +67,13 @@
                 <button class="nav-link active" id="desayuno-tab" data-bs-toggle="tab" data-bs-target="#desayuno-pane" type="button" role="tab">Desayuno</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="colacion-tab" data-bs-toggle="tab" data-bs-target="#colacion-pane" type="button" role="tab">Colación</button>
+                <button class="nav-link" id="colacion-tab" data-bs-toggle="tab" data-bs-target="#colacion-pane" type="button" role="tab">Colación 1</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="comida-tab" data-bs-toggle="tab" data-bs-target="#comida-pane" type="button" role="tab">Comida</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="colacion2-tab" data-bs-toggle="tab" data-bs-target="#colacion2-pane" type="button" role="tab">Colación 2</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="cena-tab" data-bs-toggle="tab" data-bs-target="#cena-pane" type="button" role="tab">Cena</button>
@@ -100,20 +103,10 @@
 
             <div class="tab-pane fade" id="colacion-pane" role="tabpanel">
                 <div class="row mb-2">
-                    <div class="col-md-3 font-weight-bold">Horario colación 1:</div>
+                    <div class="col-md-3 font-weight-bold">Horario recomendado:</div>
                     <div class="col-md-9">
                         {% if plan.horario_colacion1 %}
                             {{ plan.horario_colacion1|time:"H:i" }}
-                        {% else %}
-                            <span class="text-muted">No especificado</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-md-3 font-weight-bold">Horario colación 2:</div>
-                    <div class="col-md-9">
-                        {% if plan.horario_colacion2 %}
-                            {{ plan.horario_colacion2|time:"H:i" }}
                         {% else %}
                             <span class="text-muted">No especificado</span>
                         {% endif %}
@@ -123,7 +116,7 @@
                 {% if plan.contenido_colacion %}
                     <p>{{ plan.contenido_colacion|linebreaksbr }}</p>
                 {% else %}
-                    <p class="text-muted">No se especificó un plan para la colación.</p>
+                    <p class="text-muted">No se especificó un plan para la colación 1.</p>
                 {% endif %}
             </div>
 
@@ -143,6 +136,25 @@
                     <p>{{ plan.contenido_comida|linebreaksbr }}</p>
                 {% else %}
                     <p class="text-muted">No se especificó un plan para la comida.</p>
+                {% endif %}
+            </div>
+            
+            <div class="tab-pane fade" id="colacion2-pane" role="tabpanel">
+                <div class="row mb-2">
+                    <div class="col-md-3 font-weight-bold">Horario recomendado:</div>
+                    <div class="col-md-9">
+                        {% if plan.horario_colacion2 %}
+                            {{ plan.horario_colacion2|time:"H:i" }}
+                        {% else %}
+                            <span class="text-muted">No especificado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr>
+                {% if plan.contenido_colacion2 %}
+                    <p>{{ plan.contenido_colacion2|linebreaksbr }}</p>
+                {% else %}
+                    <p class="text-muted">No se especificó un plan para la colación 2.</p>
                 {% endif %}
             </div>
 

@@ -306,59 +306,60 @@ def generar_pdf(plan_id):
 
     # Y simplemente añádelo a tu historia donde quieras la línea
     story.append(linea_separadora)
-    story.append(Paragraph("Plan Nutricional", styles['h1']))
-    story.append(Spacer(1, 0.2*inch))
     
+    # Información del paciente centrada
     info_paciente = f"""
-        <b>Paciente:</b> {paciente.nombre} {paciente.apellidos}<br/>
-        <b>Fecha:</b> {plan.fecha_creacion.strftime('%d/%m/%Y')}<br/>
-        <b>Mediciones:</b> Peso: {plan.consulta.peso} kg | Altura: {plan.consulta.altura} cm | IMC: {plan.consulta.imc:.2f}
+        <para alignment="center"><b>Paciente:</b> {paciente.nombre} {paciente.apellidos}<br/>
+        <b>Fecha:</b> {plan.fecha_creacion.strftime('%d/%m/%Y')}</para>
     """
     story.append(Paragraph(info_paciente, styles['Normal']))
-    story.append(Spacer(1, 0.3*inch))
-
-    story.append(Paragraph("<b><u>Plan Nutricional:</u></b>", styles['Normal']))
     story.append(Spacer(1, 0.2*inch))
+
+    # Definimos estilos para los títulos y el contenido de las comidas
+    style_titulo_comida = styles['h3']
+    style_titulo_comida.alignment = 1  # 1 = center
+    
+    style_contenido_comida = styles['BodyText']
+    style_contenido_comida.fontSize = 9  # Reducir tamaño de fuente para que quepa en una hoja
+    style_contenido_comida.leading = 11  # Reducir espacio entre líneas
+    style_contenido_comida.alignment = 1  # 1 = center
+    
     secciones_plan = [
     ('Desayuno', plan.contenido_desayuno, plan.horario_desayuno),
     ('Colación 1', plan.contenido_colacion, plan.horario_colacion1),
     ('Comida', plan.contenido_comida, plan.horario_comida),
-    ('Colación 2', plan.contenido_colacion, plan.horario_colacion2), 
+    ('Colación 2', plan.contenido_colacion2, plan.horario_colacion2), 
     ('Cena', plan.contenido_cena, plan.horario_cena)
     ]
-
-    # Definimos estilos para los títulos y el contenido de las comidas
-    style_titulo_comida = styles['h3']
-    style_contenido_comida = styles['BodyText']
     
     for titulo, contenido, horario in secciones_plan:
         if contenido and contenido.strip():        
             titulo_texto = titulo
             if horario:
                 titulo_texto += f" ({horario.strftime('%H:%M')})"
+            else:
+                titulo_texto += " (No se eligió horario)"
             story.append(Paragraph(titulo_texto, style_titulo_comida))
             contenido_html = contenido.replace('\n', '<br/>')
-            story.append(Paragraph(contenido_html, style_contenido_comida))
-            story.append(Spacer(1, 0.2*inch))
+            story.append(Paragraph(f"<para alignment='center'>{contenido_html}</para>", style_contenido_comida))
+            story.append(Spacer(1, 0.15*inch))  # Reducir espacio entre secciones
 
-    story.append(Spacer(1, 0.5*inch)) 
+    story.append(Spacer(1, 0.3*inch)) 
 
     style_aclaraciones = styles['BodyText']
-    style_aclaraciones.fontSize = 10
-    style_aclaraciones.leading = 12
+    style_aclaraciones.fontSize = 9
+    style_aclaraciones.leading = 11
+    style_aclaraciones.alignment = 1  # 1 = center
 
     texto_aclaraciones1 = """
-    Debe de comer cada 3-4 hrs. Debe de tomar 2-3 litros de agua. 
-    Solo consuma frutos del monje. Consumir poca cantidad de sal o sal vegetal o rosa.
+    <para alignment='center'>Debe de comer cada 3-4 hrs. Debe de tomar 2-3 litros de agua. 
+    Solo consuma frutos del monje. Consumir poca cantidad de sal o sal vegetal o rosa.</para>
     """
     story.append(Paragraph(texto_aclaraciones1, style_aclaraciones))
     story.append(Spacer(1, 0.1*inch))
 
-    texto_equivalentes_final = "<b>Equivalentes de cereales:</b> 0-2, <b>lácteos:</b> 0, <b>fruta:</b> 1 pza o 1 taza."
+    texto_equivalentes_final = "<para alignment='center'><b>Equivalentes de cereales:</b> 0-2, <b>lácteos:</b> 0, <b>fruta:</b> 1 pza o 1 taza.</para>"
     story.append(Paragraph(texto_equivalentes_final, style_aclaraciones))
-    story.append(Spacer(1, 0.2*inch))
-    texto_advertencia = '<font color="red"><b>NO LÁCTEOS, NO CARNES ROJAS, NO FRIJOLES</b></font>'
-    story.append(Paragraph(texto_advertencia, styles['h2']))
 
     def pie_de_pagina(canvas, doc):
         canvas.saveState()
@@ -719,10 +720,18 @@ def generar_pdf_receta(request, receta_id):
     
     buffer = io.BytesIO()
 
-    # NUEVO: Definir tamaño de media página (Half US Letter)
-    receta_size = (8.5 * inch, 5.5 * inch)
-    p = canvas.Canvas(buffer, pagesize=receta_size)
-    width, height = receta_size
+    # Definir tamaño de página completa en orientación vertical (US Letter)
+    page_width, page_height = letter  # letter = (612, 792) en puntos = (8.5", 11")
+    
+    # Crear el canvas con página completa
+    p = canvas.Canvas(buffer, pagesize=letter)
+    
+    # Pero usaremos aproximadamente el 60% superior de la página
+    # para dar más espacio al contenido de la receta
+    height = page_height
+    width = page_width
+    content_height = page_height * 0.6  # Usamos el 60% superior en lugar del 50%
+    middle_page = height - content_height  # Punto donde termina nuestra área de contenido
 
     # --- ENCABEZADO ---
     # Cargar la ruta del logo
@@ -737,7 +746,8 @@ def generar_pdf_receta(request, receta_id):
 
     # Columna Izquierda: Logo
     if logo_path:
-        p.drawImage(logo_path, x=0.5*inch, y=4*inch, width=2*inch, preserveAspectRatio=True)
+        p.drawImage(logo_path, x=0.5*inch, y=height - 1.5*inch, width=2*inch, preserveAspectRatio=True)
+    
     # Estilos para los párrafos del encabezado
     styles = getSampleStyleSheet()
     style_center = ParagraphStyle(name='Center', alignment=TA_CENTER, parent=styles['Normal'], fontSize=9, leading=11)
@@ -755,7 +765,6 @@ def generar_pdf_receta(request, receta_id):
     para_centro.wrapOn(p, 3 * inch, 1.5 * inch)
     para_centro.drawOn(p, 2.75 * inch, height - 1.2 * inch)
 
-
     # Columna Derecha: Contacto
     texto_derecha_html = """
         <b>TEL .</b> 646 176 5422<br/>
@@ -768,25 +777,31 @@ def generar_pdf_receta(request, receta_id):
     para_derecha.wrapOn(p, 2 * inch, 1.5 * inch)
     para_derecha.drawOn(p, 6 * inch, height - 1.2 * inch)
 
-
     # Línea separadora después del encabezado
     p.line(0.5 * inch, height - 1.5 * inch, width - 0.5 * inch, height - 1.5 * inch)
 
     # --- CUERPO ---
     y_position = height - 1.9 * inch # Posición inicial debajo de la línea
 
-    # Información del paciente
+    # Información del paciente (a la izquierda)
     p.setFont("Helvetica-Bold", 11)
     p.drawString(0.5 * inch, y_position, "Paciente:")
     p.setFont("Helvetica", 11)
     p.drawString(1.5 * inch, y_position, f"{receta.consulta.paciente.nombre} {receta.consulta.paciente.apellidos}")
-    y_position -= 0.3 * inch
     
+    # Fecha (a la derecha)
+    fecha_str = receta.fecha_creacion.strftime("%d/%m/%Y")
     p.setFont("Helvetica-Bold", 11)
-    p.drawString(0.5 * inch, y_position, "Fecha:")
+    # Calculamos la posición para que quede alineada a la derecha
+    fecha_label_width = p.stringWidth("Fecha:", "Helvetica-Bold", 11)
+    fecha_width = p.stringWidth(fecha_str, "Helvetica", 11)
+    fecha_total_width = fecha_label_width + fecha_width + 0.2 * inch  # 0.2 inch de espacio entre label y valor
+    
+    p.drawString(width - 0.5 * inch - fecha_total_width, y_position, "Fecha:")
     p.setFont("Helvetica", 11)
-    p.drawString(1.5 * inch, y_position, receta.fecha_creacion.strftime("%d/%m/%Y"))
-    y_position -= 0.6 * inch
+    p.drawString(width - 0.5 * inch - fecha_width, y_position, fecha_str)
+    
+    y_position -= 0.6 * inch  # Mayor espacio después de la información del paciente
      
     # Contenido de la receta (sin título)
     styles = getSampleStyleSheet()
@@ -798,18 +813,25 @@ def generar_pdf_receta(request, receta_id):
     medicamentos_paragraph = Paragraph(contenido_html, style_normal)
 
     # Lógica para evitar que el texto invada el pie de página
-    footer_margin = 1.0 * inch
+    # Dejamos un margen de 0.75 pulgadas desde la línea de corte
+    footer_margin = middle_page + 0.75 * inch
     available_height = y_position - footer_margin
     w_para, h_para = medicamentos_paragraph.wrapOn(p, width - inch, available_height)
     medicamentos_paragraph.drawOn(p, 0.5 * inch, y_position - h_para)
      
     # --- PIE DE PÁGINA ---
-    # Línea separadora antes del pie de página
-    p.line(0.5 * inch, 0.75 * inch, width - 0.5 * inch, 0.75 * inch)
+    # Línea separadora antes del pie de página - colocada cerca de la línea de corte
+    pie_y = middle_page + 0.5 * inch
+    p.line(0.5 * inch, pie_y, width - 0.5 * inch, pie_y)
     
     # Texto del pie de página
     p.setFont("Helvetica-Oblique", 9)
-    p.drawCentredString(width / 2, 0.5 * inch, "Calle Mina No. 30-1, Fracc Bahía C.P 22880 Ensenada, B.C., México")
+    p.drawCentredString(width / 2, pie_y - 0.25 * inch, "Calle Mina No. 30-1, Fracc Bahía C.P 22880 Ensenada, B.C., México")
+    
+    # Dibujamos una línea punteada para indicar dónde cortar
+    p.setDash([3, 3], 0)
+    p.line(0, middle_page, width, middle_page)
+    p.setDash([], 0)  # Restaurar línea sólida
      
     # --- FINALIZAR ---
     p.showPage()

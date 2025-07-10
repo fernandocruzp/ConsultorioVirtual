@@ -76,10 +76,13 @@
                     <button class="nav-link active" id="desayuno-tab" data-bs-toggle="tab" data-bs-target="#desayuno-pane" type="button" role="tab" aria-controls="desayuno-pane" aria-selected="true">Desayuno</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="colacion-tab" data-bs-toggle="tab" data-bs-target="#colacion-pane" type="button" role="tab" aria-controls="colacion-pane" aria-selected="false">Colación</button>
+                    <button class="nav-link" id="colacion-tab" data-bs-toggle="tab" data-bs-target="#colacion-pane" type="button" role="tab" aria-controls="colacion-pane" aria-selected="false">Colación 1</button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="comida-tab" data-bs-toggle="tab" data-bs-target="#comida-pane" type="button" role="tab" aria-controls="comida-pane" aria-selected="false">Comida</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="colacion2-tab" data-bs-toggle="tab" data-bs-target="#colacion2-pane" type="button" role="tab" aria-controls="colacion2-pane" aria-selected="false">Colación 2</button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="cena-tab" data-bs-toggle="tab" data-bs-target="#cena-pane" type="button" role="tab" aria-controls="cena-pane" aria-selected="false">Cena</button>
@@ -162,25 +165,13 @@
                         {{ form.contenido_colacion.label_tag }}
                         {{ form.contenido_colacion }}
                         {% if form.contenido_colacion.errors %}<div class="invalid-feedback d-block">{{ form.contenido_colacion.errors }}</div>{% endif %}
-                        <small class="form-text text-muted">Opciones para las colaciones de media mañana y media tarde.</small>
+                        <small class="form-text text-muted">Opciones para la colación de media mañana.</small>
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.horario_colacion1.id_for_label }}">Horario colación 1:</label>
-                                {{ form.horario_colacion1 }}
-                                {% if form.horario_colacion1.errors %}<div class="invalid-feedback d-block">{{ form.horario_colacion1.errors }}</div>{% endif %}
-                                <small class="form-text text-muted">Hora recomendada para la colación de media mañana.</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.horario_colacion2.id_for_label }}">Horario colación 2:</label>
-                                {{ form.horario_colacion2 }}
-                                {% if form.horario_colacion2.errors %}<div class="invalid-feedback d-block">{{ form.horario_colacion2.errors }}</div>{% endif %}
-                                <small class="form-text text-muted">Hora recomendada para la colación de media tarde.</small>
-                            </div>
-                        </div>
+                    <div class="form-group mt-3">
+                        <label for="{{ form.horario_colacion1.id_for_label }}">Horario colación 1:</label>
+                        {{ form.horario_colacion1 }}
+                        {% if form.horario_colacion1.errors %}<div class="invalid-feedback d-block">{{ form.horario_colacion1.errors }}</div>{% endif %}
+                        <small class="form-text text-muted">Hora recomendada para la colación de media mañana.</small>
                     </div>
                 </div>
 
@@ -221,6 +212,51 @@
                         {{ form.horario_comida }}
                         {% if form.horario_comida.errors %}<div class="invalid-feedback d-block">{{ form.horario_comida.errors }}</div>{% endif %}
                         <small class="form-text text-muted">Hora recomendada para la comida principal.</small>
+                    </div>
+                </div>
+
+              <div class="tab-pane fade" id="colacion2-pane" role="tabpanel" aria-labelledby="colacion2-tab" tabindex="0">
+		<h6 class="mt-3">Opciones Rápidas para Colación 2</h6>
+		<p class="text-muted small">Selecciona una o más opciones para añadirlas al plan.</p>
+    
+		<div class="mb-3">
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="1/2 fruta" id="opcionColacion2_1" onclick="actualizarTextareaColacion2(this)" checked>
+		    <label class="form-check-label" for="opcionColacion2_1">
+                      1/2 fruta
+		    </label>
+		  </div>
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="12 nueces o almendras" id="opcionColacion2_2" onclick="actualizarTextareaColacion2(this)" checked>
+		    <label class="form-check-label" for="opcionColacion2_2">
+                      12 nueces o almendras
+		    </label>
+		  </div>
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="Carne blanca con verduras" id="opcionColacion2_3" onclick="actualizarTextareaColacion2(this)" checked>
+		    <label class="form-check-label" for="opcionColacion2_3">
+                      Carne blanca con verduras
+		    </label>
+		  </div>
+		  <div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="Gelatina sin azucar" id="opcionColacion2_4" onclick="actualizarTextareaColacion2(this)" checked>
+		    <label class="form-check-label" for="opcionColacion2_4">
+                      Gelatina sin azucar
+		    </label>
+		  </div>
+		</div>
+		<hr>
+                    <div class="form-group">
+                        {{ form.contenido_colacion2.label_tag }}
+                        {{ form.contenido_colacion2 }}
+                        {% if form.contenido_colacion2.errors %}<div class="invalid-feedback d-block">{{ form.contenido_colacion2.errors }}</div>{% endif %}
+                        <small class="form-text text-muted">Opciones para la colación de media tarde.</small>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="{{ form.horario_colacion2.id_for_label }}">Horario colación 2:</label>
+                        {{ form.horario_colacion2 }}
+                        {% if form.horario_colacion2.errors %}<div class="invalid-feedback d-block">{{ form.horario_colacion2.errors }}</div>{% endif %}
+                        <small class="form-text text-muted">Hora recomendada para la colación de media tarde.</small>
                     </div>
                 </div>
 
@@ -306,6 +342,12 @@
             });
         }
         
+        if (document.getElementById('id_contenido_colacion2') && document.getElementById('id_contenido_colacion2').value.trim() === '') {
+            document.querySelectorAll('#colacion2-pane .form-check-input:checked').forEach(function(checkbox) {
+                actualizarTextareaColacion2(checkbox);
+            });
+        }
+        
         if (document.getElementById('id_contenido_cena').value.trim() === '') {
             document.querySelectorAll('#cena-pane .form-check-input:checked').forEach(function(checkbox) {
                 actualizarTextareaCena(checkbox);
@@ -344,6 +386,20 @@
   }
   function actualizarTextareaComida(checkbox) {
         const textarea = document.getElementById('id_contenido_comida');
+        const textoOpcion = checkbox.value;
+
+        let lineas = textarea.value.split('\n').filter(linea => linea.trim() !== '');
+
+        if (checkbox.checked) {
+            lineas.push(textoOpcion);
+        } else {
+            lineas = lineas.filter(linea => linea.trim() !== textoOpcion.trim());
+        }
+
+        textarea.value = lineas.join('\n');
+  }
+  function actualizarTextareaColacion2(checkbox) {
+        const textarea = document.getElementById('id_contenido_colacion2');
         const textoOpcion = checkbox.value;
 
         let lineas = textarea.value.split('\n').filter(linea => linea.trim() !== '');

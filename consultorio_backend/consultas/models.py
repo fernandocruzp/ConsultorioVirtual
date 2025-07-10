@@ -33,8 +33,9 @@ class Consulta(models.Model):
 class PlanNutricional(models.Model):
     consulta = models.OneToOneField('consultas.Consulta', on_delete=models.CASCADE, related_name='plan')
     contenido_desayuno = models.TextField(default="")
-    contenido_colacion = models.TextField(default="")
+    contenido_colacion = models.TextField(default="", verbose_name="Contenido colación 1")
     contenido_comida = models.TextField(default="")
+    contenido_colacion2 = models.TextField(default="", verbose_name="Contenido colación 2")
     contenido_cena = models.TextField(default="")
     # Horarios
     horario_desayuno = models.TimeField(null=True, blank=True)

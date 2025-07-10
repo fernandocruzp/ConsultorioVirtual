@@ -234,19 +234,24 @@ def generar_pdf(plan_id):
 
     # Y simplemente añádelo a tu historia donde quieras la línea
     story.append(linea_separadora)
-    story.append(Paragraph("Plan Nutricional", styles['h1']))
-    story.append(Spacer(1, 0.2*inch))
     
+    # Información del paciente centrada
     info_paciente = f"""
-        <b>Paciente:</b> {paciente.nombre} {paciente.apellidos}<br/>
-        <b>Fecha:</b> {plan.fecha_creacion.strftime('%d/%m/%Y')}<br/>
-        <b>Mediciones:</b> Peso: {plan.consulta.peso} kg | Altura: {plan.consulta.altura} cm | IMC: {plan.consulta.imc:.2f}
+        <para alignment="center"><b>Paciente:</b> {paciente.nombre} {paciente.apellidos}<br/>
+        <b>Fecha:</b> {plan.fecha_creacion.strftime('%d/%m/%Y')}</para>
     """
     story.append(Paragraph(info_paciente, styles['Normal']))
-    story.append(Spacer(1, 0.3*inch))
-
-    story.append(Paragraph("<b><u>Plan Nutricional:</u></b>", styles['Normal']))
     story.append(Spacer(1, 0.2*inch))
+
+    # Definimos estilos para los títulos y el contenido de las comidas
+    style_titulo_comida = styles['h3']
+    style_titulo_comida.alignment = 1  # 1 = center
+    
+    style_contenido_comida = styles['BodyText']
+    style_contenido_comida.fontSize = 9  # Reducir tamaño de fuente para que quepa en una hoja
+    style_contenido_comida.leading = 11  # Reducir espacio entre líneas
+    style_contenido_comida.alignment = 1  # 1 = center
+    
     secciones_plan = [
     ('Desayuno', plan.contenido_desayuno, plan.horario_desayuno),
     ('Colación 1', plan.contenido_colacion, plan.horario_colacion1),
@@ -254,20 +259,18 @@ def generar_pdf(plan_id):
     ('Colación 2', plan.contenido_colacion, plan.horario_colacion2), 
     ('Cena', plan.contenido_cena, plan.horario_cena)
     ]
-
-    # Definimos estilos para los títulos y el contenido de las comidas
-    style_titulo_comida = styles['h3']
-    style_contenido_comida = styles['BodyText']
     
     for titulo, contenido, horario in secciones_plan:
         if contenido and contenido.strip():        
             titulo_texto = titulo
             if horario:
                 titulo_texto += f" ({horario.strftime('%H:%M')})"
+            else:
+                titulo_texto += " (No se eligió horario)"
             story.append(Paragraph(titulo_texto, style_titulo_comida))
             contenido_html = contenido.replace('\n', '<br/>')
-            story.append(Paragraph(contenido_html, style_contenido_comida))
-            story.append(Spacer(1, 0.2*inch))
+            story.append(Paragraph(f"<para alignment='center'>{contenido_html}</para>", style_contenido_comida))
+            story.append(Spacer(1, 0.15*inch))  # Reducir espacio entre secciones
 
     def pie_de_pagina(canvas, doc):
         canvas.saveState()
