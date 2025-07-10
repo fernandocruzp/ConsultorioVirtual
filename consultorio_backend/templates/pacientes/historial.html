@@ -9,6 +9,12 @@
     <a href="/pacientes/{{ paciente.id }}/" class="btn btn-primary">
         <i class="fas fa-user"></i> Ver Paciente
     </a>
+    <a href="/pacientes/historial/{{ paciente.id }}/pdf/" class="btn btn-success">
+        <i class="fas fa-file-pdf"></i> Guardar PDF
+    </a>
+    <a href="/pacientes/historial/{{ paciente.id }}/email/" class="btn btn-info">
+        <i class="fas fa-envelope"></i> Enviar por Email
+    </a>
 </div>
 {% endblock %}
 
