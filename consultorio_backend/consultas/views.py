@@ -526,7 +526,7 @@ def generar_pdf_receta(request, receta_id):
     # para dar más espacio al contenido de la receta
     height = page_height
     width = page_width
-    content_height = page_height * 0.6  # Usamos el 60% superior en lugar del 50%
+    content_height = page_height * 0.5 
     middle_page = height - content_height  # Punto donde termina nuestra área de contenido
 
     # --- ENCABEZADO ---
@@ -623,11 +623,6 @@ def generar_pdf_receta(request, receta_id):
     # Texto del pie de página
     p.setFont("Helvetica-Oblique", 9)
     p.drawCentredString(width / 2, pie_y - 0.25 * inch, "Calle Mina No. 30-1, Fracc Bahía C.P 22880 Ensenada, B.C., México")
-    
-    # Dibujamos una línea punteada para indicar dónde cortar
-    p.setDash([3, 3], 0)
-    p.line(0, middle_page, width, middle_page)
-    p.setDash([], 0)  # Restaurar línea sólida
      
     # --- FINALIZAR ---
     p.showPage()
